@@ -1,26 +1,125 @@
 @import "tailwindcss";
 
+/*
+ * Universal Observatory — instrument-control palette.
+ * Deep navy surfaces in layers, one restrained indigo accent, and a colour per
+ * provenance kind. Glow is used sparingly (active controls, primary actions).
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #04060d;
+  --surface: #0a0f20;
+  --surface-raised: #111836;
+  --surface-sunken: #060a17;
+  --border: #1c2546;
+  --border-strong: #2c3a6b;
+  --foreground: #e8ebf7;
+  --muted: #8a93b5;
+  --subtle: #5d6688;
+  --accent: #6c7bff;
+  --accent-strong: #5162ff;
+  --accent-foreground: #ffffff;
+
+  --prov-calculated: #7f9cff;
+  --prov-retrieved: #4fd1a5;
+  --prov-estimated: #f2b44c;
+  --prov-illustrative: #c08cff;
+
+  --success: #4fd1a5;
+  --warning: #f2b44c;
+  --danger: #ff7a7a;
+
+  --glow: 0 0 0 1px rgb(108 123 255 / 0.35), 0 0 24px -4px rgb(108 123 255 / 0.45);
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-prov-calculated: var(--prov-calculated);
+  --color-prov-retrieved: var(--prov-retrieved);
+  --color-prov-estimated: var(--prov-estimated);
+  --color-prov-illustrative: var(--prov-illustrative);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --shadow-glow: var(--glow);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  color-scheme: dark;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* A fixed, faint star field and nebula wash behind every page. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(1px 1px at 12% 18%, rgb(255 255 255 / 0.55), transparent 60%),
+    radial-gradient(1px 1px at 72% 12%, rgb(255 255 255 / 0.45), transparent 60%),
+    radial-gradient(1px 1px at 38% 66%, rgb(255 255 255 / 0.35), transparent 60%),
+    radial-gradient(1.5px 1.5px at 88% 54%, rgb(200 210 255 / 0.5), transparent 60%),
+    radial-gradient(1px 1px at 22% 84%, rgb(255 255 255 / 0.35), transparent 60%),
+    radial-gradient(1px 1px at 58% 38%, rgb(255 255 255 / 0.3), transparent 60%),
+    radial-gradient(1px 1px at 94% 88%, rgb(255 255 255 / 0.4), transparent 60%),
+    radial-gradient(1.5px 1.5px at 6% 52%, rgb(200 210 255 / 0.45), transparent 60%),
+    radial-gradient(ellipse 60% 45% at 85% -5%, rgb(84 96 255 / 0.16), transparent 70%),
+    radial-gradient(ellipse 50% 40% at -5% 105%, rgb(150 90 255 / 0.09), transparent 70%),
+    var(--background);
+  background-size:
+    320px 320px, 410px 410px, 290px 290px, 530px 530px, 370px 370px, 460px 460px, 610px 610px, 350px 350px,
+    100% 100%, 100% 100%, 100% 100%;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Glass card: the standard container across the app. */
+@utility glass {
+  background: linear-gradient(180deg, rgb(17 24 54 / 0.72), rgb(10 15 32 / 0.72));
+  border: 1px solid var(--border);
+  backdrop-filter: blur(10px);
+}
+
+@utility eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+dialog::backdrop {
+  background: rgb(2 4 10 / 0.7);
+  backdrop-filter: blur(4px);
 }
