@@ -1,0 +1,819 @@
+{
+  "generatedBy": "scripts/fetch-reference-images.mjs",
+  "images": [
+    {
+      "targetId": "moon",
+      "kind": "body",
+      "src": "/reference/moon.webp",
+      "widthPx": 1000,
+      "heightPx": 1000,
+      "source": {
+        "name": "Wikimedia Commons",
+        "pageUrl": "https://commons.wikimedia.org/wiki/File:FullMoon2010.jpg",
+        "credit": "Gregory H. Revera",
+        "license": "CC BY-SA 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+        "description": "Full Moon photograph taken 10-22-2010 from Madison, Alabama, USA. Photographed with a Celestron 9.25 Schmidt-Cassegrain telescope. Acquired with a Canon EOS Rebel T1i (EOS 500D), 20 images stacked to reduce noise. 200 ISO 1/640 sec.",
+        "retrievedAt": "2026-11-14T13:51:30.359Z"
+      },
+      "processing": "Cropped to the body's extent and resized; colours unchanged.",
+      "notes": [
+        "Earth-based photograph through a 235 mm (9.25-inch) Schmidt-Cassegrain telescope.",
+        "Shows a full Moon; the real phase on any given night will differ."
+      ]
+    },
+    {
+      "targetId": "jupiter",
+      "kind": "body",
+      "src": "/reference/jupiter.webp",
+      "widthPx": 1000,
+      "heightPx": 958,
+      "source": {
+        "name": "Wikimedia Commons",
+        "pageUrl": "https://commons.wikimedia.org/wiki/File:Jupiter_and_its_shrunken_Great_Red_Spot.jpg",
+        "credit": "NASA, ESA, and A. Simon (Goddard Space Flight Center)",
+        "license": "Public domain",
+        "description": "This full-disc image of Jupiter was taken on 21 April 2014 with Hubble's Wide Field Camera 3 (WFC3).",
+        "retrievedAt": "2026-11-14T13:51:30.518Z"
+      },
+      "processing": "Cropped to the body's extent and resized; colours unchanged.",
+      "notes": [
+        "Hubble Space Telescope image (2014). Far sharper than any ground-based view; the Lab blurs it to your calculated resolution.",
+        "Cloud bands and the Great Red Spot change over time and with Jupiter's rotation."
+      ]
+    },
+    {
+      "targetId": "saturn",
+      "kind": "body",
+      "src": "/reference/saturn.webp",
+      "widthPx": 1000,
+      "heightPx": 425,
+      "source": {
+        "name": "Wikimedia Commons",
+        "pageUrl": "https://commons.wikimedia.org/wiki/File:Saturn_-_HST_2019-06-20.jpg",
+        "credit": "NASA, ESA, A. Simon (Goddard Space Flight Center), M.H. Wong (UC Berkeley), OPAL Team",
+        "license": "Public domain",
+        "description": "Uploader's notes: the original NASA / ESA 2076 x 1484 pixel PNG image has been modified by cropping and conversion to JPEG format. Original caption released with image: Anyone who has ever peered at Saturn through a small telescope is immediately enticed by its elegant rings, which make the far-flun",
+        "retrievedAt": "2026-11-14T13:51:30.661Z"
+      },
+      "processing": "Cropped to the body's extent and resized; colours unchanged.",
+      "notes": [
+        "Hubble Space Telescope image (June 2019), when the rings were tilted widely towards Earth.",
+        "The ring opening changes over a 29.5-year cycle: the rings were edge-on in 2025 and appear much narrower in 2026."
+      ]
+    },
+    {
+      "targetId": "neptune",
+      "kind": "body",
+      "src": "/reference/neptune.webp",
+      "widthPx": 1000,
+      "heightPx": 1024,
+      "source": {
+        "name": "Wikimedia Commons",
+        "pageUrl": "https://commons.wikimedia.org/wiki/File:Neptune_Full.jpg",
+        "credit": "NASA",
+        "license": "Public domain",
+        "description": "This enhanced-color picture of Neptune was produced from the last whole planet images taken through the green and orange filters on the Voyager 2 narrow angle camera. The images were taken at a range of 4.4 million miles from the planet, 4 days and 20 hours before closest approach in August 1989.The",
+        "retrievedAt": "2026-11-15T07:34:12.375Z"
+      },
+      "processing": "Cropped to the body's extent and resized; colours unchanged.",
+      "notes": [
+        "Voyager 2 image (1989). Through an amateur telescope Neptune is a tiny blue disc with no visible detail."
+      ]
+    },
+    {
+      "targetId": "m42",
+      "kind": "field",
+      "src": "/reference/m42.webp",
+      "widthPx": 2048,
+      "heightPx": 2048,
+      "fieldWidthArcsec": 14400,
+      "fieldHeightArcsec": 14400,
+      "center": {
+        "raDeg": 83.8221,
+        "decDeg": -5.3911
+      },
+      "source": {
+        "name": "NASA SkyView (Goddard Space Flight Center)",
+        "pageUrl": "https://skyview.gsfc.nasa.gov/",
+        "queryUrls": [
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Red&Position=83.8221%2C-5.3911&Coordinates=J2000&Projection=Tan&Size=4&Pixels=2048&Scaling=Log&Return=JPEG",
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Blue&Position=83.8221%2C-5.3911&Coordinates=J2000&Projection=Tan&Size=4&Pixels=2048&Scaling=Log&Return=JPEG"
+        ],
+        "credit": "Digitized Sky Survey, produced at the Space Telescope Science Institute under U.S. Government grant NAG W-2166; retrieved via NASA SkyView.",
+        "license": "Free for research and education with acknowledgement",
+        "licenseUrl": "https://archive.stsci.edu/dss/acknowledging.html",
+        "description": "DSS2 Red + DSS2 Blue photographic survey, 4° × 4° gnomonic cutout centred on the target.",
+        "retrievedAt": "2026-11-15T09:02:36.046Z"
+      },
+      "processing": "Colour composite: red plate → red, blue plate → blue (×1.18 so typical stars are neutral), their mean → green; log scale with a black-point stretch. North up, east left.",
+      "notes": [
+        "Long-exposure photographic survey: shows far more colour and faint structure than the eye sees through an eyepiece."
+      ],
+      "objectSrc": "/reference/m42-object.webp",
+      "objectProcessing": "Stars removed for the eyepiece view: catalogue stars masked with the surrounding sky level, then a 7-pixel median filter to remove fainter plate stars."
+    },
+    {
+      "targetId": "m31",
+      "kind": "field",
+      "src": "/reference/m31.webp",
+      "widthPx": 2048,
+      "heightPx": 2048,
+      "fieldWidthArcsec": 18000,
+      "fieldHeightArcsec": 18000,
+      "center": {
+        "raDeg": 10.6847,
+        "decDeg": 41.2687
+      },
+      "source": {
+        "name": "NASA SkyView (Goddard Space Flight Center)",
+        "pageUrl": "https://skyview.gsfc.nasa.gov/",
+        "queryUrls": [
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS&Position=10.6847%2C41.2687&Coordinates=J2000&Projection=Tan&Size=5&Pixels=2048&Scaling=Log&Return=JPEG"
+        ],
+        "credit": "Digitized Sky Survey, produced at the Space Telescope Science Institute under U.S. Government grant NAG W-2166; retrieved via NASA SkyView.",
+        "license": "Free for research and education with acknowledgement",
+        "licenseUrl": "https://archive.stsci.edu/dss/acknowledging.html",
+        "description": "DSS photographic survey, 5° × 5° gnomonic cutout centred on the target.",
+        "retrievedAt": "2026-11-15T09:02:49.987Z"
+      },
+      "processing": "Single photographic band shown in greyscale; log scale with a black-point stretch. North up, east left.",
+      "notes": [
+        "Long-exposure photographic survey: shows far more colour and faint structure than the eye sees through an eyepiece."
+      ],
+      "objectSrc": "/reference/m31-object.webp",
+      "objectProcessing": "Stars removed for the eyepiece view: catalogue stars masked with the surrounding sky level, then a 7-pixel median filter to remove fainter plate stars."
+    },
+    {
+      "targetId": "m33",
+      "kind": "field",
+      "src": "/reference/m33.webp",
+      "widthPx": 2048,
+      "heightPx": 2048,
+      "fieldWidthArcsec": 10512,
+      "fieldHeightArcsec": 10512,
+      "center": {
+        "raDeg": 23.4621,
+        "decDeg": 30.6602
+      },
+      "source": {
+        "name": "NASA SkyView (Goddard Space Flight Center)",
+        "pageUrl": "https://skyview.gsfc.nasa.gov/",
+        "queryUrls": [
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Red&Position=23.4621%2C30.6602&Coordinates=J2000&Projection=Tan&Size=2.92&Pixels=2048&Scaling=Log&Return=JPEG",
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Blue&Position=23.4621%2C30.6602&Coordinates=J2000&Projection=Tan&Size=2.92&Pixels=2048&Scaling=Log&Return=JPEG"
+        ],
+        "credit": "Digitized Sky Survey, produced at the Space Telescope Science Institute under U.S. Government grant NAG W-2166; retrieved via NASA SkyView.",
+        "license": "Free for research and education with acknowledgement",
+        "licenseUrl": "https://archive.stsci.edu/dss/acknowledging.html",
+        "description": "DSS2 Red + DSS2 Blue photographic survey, 2.92° × 2.92° gnomonic cutout centred on the target.",
+        "retrievedAt": "2026-11-15T09:03:10.829Z"
+      },
+      "processing": "Colour composite: red plate → red, blue plate → blue (×0.94 so typical stars are neutral), their mean → green; log scale with a black-point stretch. North up, east left.",
+      "notes": [
+        "Long-exposure photographic survey: shows far more colour and faint structure than the eye sees through an eyepiece."
+      ],
+      "objectSrc": "/reference/m33-object.webp",
+      "objectProcessing": "Stars removed for the eyepiece view: catalogue stars masked with the surrounding sky level, then a 7-pixel median filter to remove fainter plate stars."
+    },
+    {
+      "targetId": "m51",
+      "kind": "field",
+      "src": "/reference/m51.webp",
+      "widthPx": 2048,
+      "heightPx": 2048,
+      "fieldWidthArcsec": 5400,
+      "fieldHeightArcsec": 5400,
+      "center": {
+        "raDeg": 202.4696,
+        "decDeg": 47.1952
+      },
+      "source": {
+        "name": "NASA SkyView (Goddard Space Flight Center)",
+        "pageUrl": "https://skyview.gsfc.nasa.gov/",
+        "queryUrls": [
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Red&Position=202.4696%2C47.1952&Coordinates=J2000&Projection=Tan&Size=1.5&Pixels=2048&Scaling=Log&Return=JPEG",
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Blue&Position=202.4696%2C47.1952&Coordinates=J2000&Projection=Tan&Size=1.5&Pixels=2048&Scaling=Log&Return=JPEG"
+        ],
+        "credit": "Digitized Sky Survey, produced at the Space Telescope Science Institute under U.S. Government grant NAG W-2166; retrieved via NASA SkyView.",
+        "license": "Free for research and education with acknowledgement",
+        "licenseUrl": "https://archive.stsci.edu/dss/acknowledging.html",
+        "description": "DSS2 Red + DSS2 Blue photographic survey, 1.5° × 1.5° gnomonic cutout centred on the target.",
+        "retrievedAt": "2026-11-15T09:03:25.981Z"
+      },
+      "processing": "Colour composite: red plate → red, blue plate → blue (×0.96 so typical stars are neutral), their mean → green; log scale with a black-point stretch. North up, east left.",
+      "notes": [
+        "Long-exposure photographic survey: shows far more colour and faint structure than the eye sees through an eyepiece."
+      ],
+      "objectSrc": "/reference/m51-object.webp",
+      "objectProcessing": "Stars removed for the eyepiece view: catalogue stars masked with the surrounding sky level, then a 7-pixel median filter to remove fainter plate stars."
+    },
+    {
+      "targetId": "m81",
+      "kind": "field",
+      "src": "/reference/m81.webp",
+      "widthPx": 2048,
+      "heightPx": 2048,
+      "fieldWidthArcsec": 5400,
+      "fieldHeightArcsec": 5400,
+      "center": {
+        "raDeg": 148.8882,
+        "decDeg": 69.0653
+      },
+      "source": {
+        "name": "NASA SkyView (Goddard Space Flight Center)",
+        "pageUrl": "https://skyview.gsfc.nasa.gov/",
+        "queryUrls": [
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Red&Position=148.8882%2C69.0653&Coordinates=J2000&Projection=Tan&Size=1.5&Pixels=2048&Scaling=Log&Return=JPEG",
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Blue&Position=148.8882%2C69.0653&Coordinates=J2000&Projection=Tan&Size=1.5&Pixels=2048&Scaling=Log&Return=JPEG"
+        ],
+        "credit": "Digitized Sky Survey, produced at the Space Telescope Science Institute under U.S. Government grant NAG W-2166; retrieved via NASA SkyView.",
+        "license": "Free for research and education with acknowledgement",
+        "licenseUrl": "https://archive.stsci.edu/dss/acknowledging.html",
+        "description": "DSS2 Red + DSS2 Blue photographic survey, 1.5° × 1.5° gnomonic cutout centred on the target.",
+        "retrievedAt": "2026-11-15T09:03:44.185Z"
+      },
+      "processing": "Colour composite: red plate → red, blue plate → blue (×0.97 so typical stars are neutral), their mean → green; log scale with a black-point stretch. North up, east left.",
+      "notes": [
+        "Long-exposure photographic survey: shows far more colour and faint structure than the eye sees through an eyepiece."
+      ],
+      "objectSrc": "/reference/m81-object.webp",
+      "objectProcessing": "Stars removed for the eyepiece view: catalogue stars masked with the surrounding sky level, then a 7-pixel median filter to remove fainter plate stars."
+    },
+    {
+      "targetId": "m82",
+      "kind": "field",
+      "src": "/reference/m82.webp",
+      "widthPx": 2048,
+      "heightPx": 2048,
+      "fieldWidthArcsec": 5400,
+      "fieldHeightArcsec": 5400,
+      "center": {
+        "raDeg": 148.9697,
+        "decDeg": 69.6797
+      },
+      "source": {
+        "name": "NASA SkyView (Goddard Space Flight Center)",
+        "pageUrl": "https://skyview.gsfc.nasa.gov/",
+        "queryUrls": [
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Red&Position=148.9697%2C69.6797&Coordinates=J2000&Projection=Tan&Size=1.5&Pixels=2048&Scaling=Log&Return=JPEG",
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Blue&Position=148.9697%2C69.6797&Coordinates=J2000&Projection=Tan&Size=1.5&Pixels=2048&Scaling=Log&Return=JPEG"
+        ],
+        "credit": "Digitized Sky Survey, produced at the Space Telescope Science Institute under U.S. Government grant NAG W-2166; retrieved via NASA SkyView.",
+        "license": "Free for research and education with acknowledgement",
+        "licenseUrl": "https://archive.stsci.edu/dss/acknowledging.html",
+        "description": "DSS2 Red + DSS2 Blue photographic survey, 1.5° × 1.5° gnomonic cutout centred on the target.",
+        "retrievedAt": "2026-11-15T09:04:02.314Z"
+      },
+      "processing": "Colour composite: red plate → red, blue plate → blue (×0.99 so typical stars are neutral), their mean → green; log scale with a black-point stretch. North up, east left.",
+      "notes": [
+        "Long-exposure photographic survey: shows far more colour and faint structure than the eye sees through an eyepiece."
+      ],
+      "objectSrc": "/reference/m82-object.webp",
+      "objectProcessing": "Stars removed for the eyepiece view: catalogue stars masked with the surrounding sky level, then a 7-pixel median filter to remove fainter plate stars."
+    },
+    {
+      "targetId": "m101",
+      "kind": "field",
+      "src": "/reference/m101.webp",
+      "widthPx": 2048,
+      "heightPx": 2048,
+      "fieldWidthArcsec": 5400,
+      "fieldHeightArcsec": 5400,
+      "center": {
+        "raDeg": 210.8025,
+        "decDeg": 54.3488
+      },
+      "source": {
+        "name": "NASA SkyView (Goddard Space Flight Center)",
+        "pageUrl": "https://skyview.gsfc.nasa.gov/",
+        "queryUrls": [
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Red&Position=210.8025%2C54.3488&Coordinates=J2000&Projection=Tan&Size=1.5&Pixels=2048&Scaling=Log&Return=JPEG",
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Blue&Position=210.8025%2C54.3488&Coordinates=J2000&Projection=Tan&Size=1.5&Pixels=2048&Scaling=Log&Return=JPEG"
+        ],
+        "credit": "Digitized Sky Survey, produced at the Space Telescope Science Institute under U.S. Government grant NAG W-2166; retrieved via NASA SkyView.",
+        "license": "Free for research and education with acknowledgement",
+        "licenseUrl": "https://archive.stsci.edu/dss/acknowledging.html",
+        "description": "DSS2 Red + DSS2 Blue photographic survey, 1.5° × 1.5° gnomonic cutout centred on the target.",
+        "retrievedAt": "2026-11-15T09:04:18.000Z"
+      },
+      "processing": "Colour composite: red plate → red, blue plate → blue (×0.75 so typical stars are neutral), their mean → green; log scale with a black-point stretch. North up, east left.",
+      "notes": [
+        "Long-exposure photographic survey: shows far more colour and faint structure than the eye sees through an eyepiece."
+      ],
+      "objectSrc": "/reference/m101-object.webp",
+      "objectProcessing": "Stars removed for the eyepiece view: catalogue stars masked with the surrounding sky level, then a 7-pixel median filter to remove fainter plate stars."
+    },
+    {
+      "targetId": "m104",
+      "kind": "field",
+      "src": "/reference/m104.webp",
+      "widthPx": 2048,
+      "heightPx": 2048,
+      "fieldWidthArcsec": 5400,
+      "fieldHeightArcsec": 5400,
+      "center": {
+        "raDeg": 189.9977,
+        "decDeg": -11.6231
+      },
+      "source": {
+        "name": "NASA SkyView (Goddard Space Flight Center)",
+        "pageUrl": "https://skyview.gsfc.nasa.gov/",
+        "queryUrls": [
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Red&Position=189.9977%2C-11.6231&Coordinates=J2000&Projection=Tan&Size=1.5&Pixels=2048&Scaling=Log&Return=JPEG",
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Blue&Position=189.9977%2C-11.6231&Coordinates=J2000&Projection=Tan&Size=1.5&Pixels=2048&Scaling=Log&Return=JPEG"
+        ],
+        "credit": "Digitized Sky Survey, produced at the Space Telescope Science Institute under U.S. Government grant NAG W-2166; retrieved via NASA SkyView.",
+        "license": "Free for research and education with acknowledgement",
+        "licenseUrl": "https://archive.stsci.edu/dss/acknowledging.html",
+        "description": "DSS2 Red + DSS2 Blue photographic survey, 1.5° × 1.5° gnomonic cutout centred on the target.",
+        "retrievedAt": "2026-11-15T09:04:40.294Z"
+      },
+      "processing": "Colour composite: red plate → red, blue plate → blue (×0.95 so typical stars are neutral), their mean → green; log scale with a black-point stretch. North up, east left.",
+      "notes": [
+        "Long-exposure photographic survey: shows far more colour and faint structure than the eye sees through an eyepiece."
+      ],
+      "objectSrc": "/reference/m104-object.webp",
+      "objectProcessing": "Stars removed for the eyepiece view: catalogue stars masked with the surrounding sky level, then a 7-pixel median filter to remove fainter plate stars."
+    },
+    {
+      "targetId": "m64",
+      "kind": "field",
+      "src": "/reference/m64.webp",
+      "widthPx": 2048,
+      "heightPx": 2048,
+      "fieldWidthArcsec": 5400,
+      "fieldHeightArcsec": 5400,
+      "center": {
+        "raDeg": 194.1821,
+        "decDeg": 21.6827
+      },
+      "source": {
+        "name": "NASA SkyView (Goddard Space Flight Center)",
+        "pageUrl": "https://skyview.gsfc.nasa.gov/",
+        "queryUrls": [
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Red&Position=194.1821%2C21.6827&Coordinates=J2000&Projection=Tan&Size=1.5&Pixels=2048&Scaling=Log&Return=JPEG",
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Blue&Position=194.1821%2C21.6827&Coordinates=J2000&Projection=Tan&Size=1.5&Pixels=2048&Scaling=Log&Return=JPEG"
+        ],
+        "credit": "Digitized Sky Survey, produced at the Space Telescope Science Institute under U.S. Government grant NAG W-2166; retrieved via NASA SkyView.",
+        "license": "Free for research and education with acknowledgement",
+        "licenseUrl": "https://archive.stsci.edu/dss/acknowledging.html",
+        "description": "DSS2 Red + DSS2 Blue photographic survey, 1.5° × 1.5° gnomonic cutout centred on the target.",
+        "retrievedAt": "2026-11-15T09:04:58.010Z"
+      },
+      "processing": "Colour composite: red plate → red, blue plate → blue (×1.06 so typical stars are neutral), their mean → green; log scale with a black-point stretch. North up, east left.",
+      "notes": [
+        "Long-exposure photographic survey: shows far more colour and faint structure than the eye sees through an eyepiece."
+      ],
+      "objectSrc": "/reference/m64-object.webp",
+      "objectProcessing": "Stars removed for the eyepiece view: catalogue stars masked with the surrounding sky level, then a 7-pixel median filter to remove fainter plate stars."
+    },
+    {
+      "targetId": "ngc253",
+      "kind": "field",
+      "src": "/reference/ngc253.webp",
+      "widthPx": 2048,
+      "heightPx": 2048,
+      "fieldWidthArcsec": 5400,
+      "fieldHeightArcsec": 5400,
+      "center": {
+        "raDeg": 11.888,
+        "decDeg": -25.2883
+      },
+      "source": {
+        "name": "NASA SkyView (Goddard Space Flight Center)",
+        "pageUrl": "https://skyview.gsfc.nasa.gov/",
+        "queryUrls": [
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Red&Position=11.888%2C-25.2883&Coordinates=J2000&Projection=Tan&Size=1.5&Pixels=2048&Scaling=Log&Return=JPEG",
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Blue&Position=11.888%2C-25.2883&Coordinates=J2000&Projection=Tan&Size=1.5&Pixels=2048&Scaling=Log&Return=JPEG"
+        ],
+        "credit": "Digitized Sky Survey, produced at the Space Telescope Science Institute under U.S. Government grant NAG W-2166; retrieved via NASA SkyView.",
+        "license": "Free for research and education with acknowledgement",
+        "licenseUrl": "https://archive.stsci.edu/dss/acknowledging.html",
+        "description": "DSS2 Red + DSS2 Blue photographic survey, 1.5° × 1.5° gnomonic cutout centred on the target.",
+        "retrievedAt": "2026-11-15T09:05:14.971Z"
+      },
+      "processing": "Colour composite: red plate → red, blue plate → blue (×0.60 so typical stars are neutral), their mean → green; log scale with a black-point stretch. North up, east left.",
+      "notes": [
+        "Long-exposure photographic survey: shows far more colour and faint structure than the eye sees through an eyepiece."
+      ],
+      "objectSrc": "/reference/ngc253-object.webp",
+      "objectProcessing": "Stars removed for the eyepiece view: catalogue stars masked with the surrounding sky level, then a 7-pixel median filter to remove fainter plate stars."
+    },
+    {
+      "targetId": "m8",
+      "kind": "field",
+      "src": "/reference/m8.webp",
+      "widthPx": 2048,
+      "heightPx": 2048,
+      "fieldWidthArcsec": 13500,
+      "fieldHeightArcsec": 13500,
+      "center": {
+        "raDeg": 270.904,
+        "decDeg": -24.387
+      },
+      "source": {
+        "name": "NASA SkyView (Goddard Space Flight Center)",
+        "pageUrl": "https://skyview.gsfc.nasa.gov/",
+        "queryUrls": [
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Red&Position=270.904%2C-24.387&Coordinates=J2000&Projection=Tan&Size=3.75&Pixels=2048&Scaling=Log&Return=JPEG",
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS1+Blue&Position=270.904%2C-24.387&Coordinates=J2000&Projection=Tan&Size=3.75&Pixels=2048&Scaling=Log&Return=JPEG"
+        ],
+        "credit": "Digitized Sky Survey, produced at the Space Telescope Science Institute under U.S. Government grant NAG W-2166; retrieved via NASA SkyView.",
+        "license": "Free for research and education with acknowledgement",
+        "licenseUrl": "https://archive.stsci.edu/dss/acknowledging.html",
+        "description": "DSS2 Red + DSS1 Blue photographic survey, 3.75° × 3.75° gnomonic cutout centred on the target.",
+        "retrievedAt": "2026-11-15T09:14:07.584Z"
+      },
+      "processing": "Colour composite: red plate → red, blue plate → blue (×1.04 so typical stars are neutral), their mean → green; log scale with a black-point stretch. North up, east left.",
+      "notes": [
+        "Long-exposure photographic survey: shows far more colour and faint structure than the eye sees through an eyepiece."
+      ],
+      "objectSrc": "/reference/m8-object.webp",
+      "objectProcessing": "Stars removed for the eyepiece view: catalogue stars masked with the surrounding sky level, then a 7-pixel median filter to remove fainter plate stars."
+    },
+    {
+      "targetId": "m20",
+      "kind": "field",
+      "src": "/reference/m20.webp",
+      "widthPx": 2048,
+      "heightPx": 2048,
+      "fieldWidthArcsec": 5400,
+      "fieldHeightArcsec": 5400,
+      "center": {
+        "raDeg": 270.596,
+        "decDeg": -23.03
+      },
+      "source": {
+        "name": "NASA SkyView (Goddard Space Flight Center)",
+        "pageUrl": "https://skyview.gsfc.nasa.gov/",
+        "queryUrls": [
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Red&Position=270.596%2C-23.03&Coordinates=J2000&Projection=Tan&Size=1.5&Pixels=2048&Scaling=Log&Return=JPEG",
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS1+Blue&Position=270.596%2C-23.03&Coordinates=J2000&Projection=Tan&Size=1.5&Pixels=2048&Scaling=Log&Return=JPEG"
+        ],
+        "credit": "Digitized Sky Survey, produced at the Space Telescope Science Institute under U.S. Government grant NAG W-2166; retrieved via NASA SkyView.",
+        "license": "Free for research and education with acknowledgement",
+        "licenseUrl": "https://archive.stsci.edu/dss/acknowledging.html",
+        "description": "DSS2 Red + DSS1 Blue photographic survey, 1.5° × 1.5° gnomonic cutout centred on the target.",
+        "retrievedAt": "2026-11-15T09:14:32.757Z"
+      },
+      "processing": "Colour composite: red plate → red, blue plate → blue (×1.06 so typical stars are neutral), their mean → green; log scale with a black-point stretch. North up, east left.",
+      "notes": [
+        "Long-exposure photographic survey: shows far more colour and faint structure than the eye sees through an eyepiece."
+      ],
+      "objectSrc": "/reference/m20-object.webp",
+      "objectProcessing": "Stars removed for the eyepiece view: catalogue stars masked with the surrounding sky level, then a 7-pixel median filter to remove fainter plate stars."
+    },
+    {
+      "targetId": "m17",
+      "kind": "field",
+      "src": "/reference/m17.webp",
+      "widthPx": 2048,
+      "heightPx": 2048,
+      "fieldWidthArcsec": 5400,
+      "fieldHeightArcsec": 5400,
+      "center": {
+        "raDeg": 275.108,
+        "decDeg": -16.177
+      },
+      "source": {
+        "name": "NASA SkyView (Goddard Space Flight Center)",
+        "pageUrl": "https://skyview.gsfc.nasa.gov/",
+        "queryUrls": [
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Red&Position=275.108%2C-16.177&Coordinates=J2000&Projection=Tan&Size=1.5&Pixels=2048&Scaling=Log&Return=JPEG",
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS1+Blue&Position=275.108%2C-16.177&Coordinates=J2000&Projection=Tan&Size=1.5&Pixels=2048&Scaling=Log&Return=JPEG"
+        ],
+        "credit": "Digitized Sky Survey, produced at the Space Telescope Science Institute under U.S. Government grant NAG W-2166; retrieved via NASA SkyView.",
+        "license": "Free for research and education with acknowledgement",
+        "licenseUrl": "https://archive.stsci.edu/dss/acknowledging.html",
+        "description": "DSS2 Red + DSS1 Blue photographic survey, 1.5° × 1.5° gnomonic cutout centred on the target.",
+        "retrievedAt": "2026-11-15T09:15:12.091Z"
+      },
+      "processing": "Colour composite: red plate → red, blue plate → blue (×1.02 so typical stars are neutral), their mean → green; log scale with a black-point stretch. North up, east left.",
+      "notes": [
+        "Long-exposure photographic survey: shows far more colour and faint structure than the eye sees through an eyepiece."
+      ],
+      "objectSrc": "/reference/m17-object.webp",
+      "objectProcessing": "Stars removed for the eyepiece view: catalogue stars masked with the surrounding sky level, then a 7-pixel median filter to remove fainter plate stars."
+    },
+    {
+      "targetId": "m1",
+      "kind": "field",
+      "src": "/reference/m1.webp",
+      "widthPx": 2048,
+      "heightPx": 2048,
+      "fieldWidthArcsec": 5400,
+      "fieldHeightArcsec": 5400,
+      "center": {
+        "raDeg": 83.6331,
+        "decDeg": 22.0145
+      },
+      "source": {
+        "name": "NASA SkyView (Goddard Space Flight Center)",
+        "pageUrl": "https://skyview.gsfc.nasa.gov/",
+        "queryUrls": [
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Red&Position=83.6331%2C22.0145&Coordinates=J2000&Projection=Tan&Size=1.5&Pixels=2048&Scaling=Log&Return=JPEG",
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Blue&Position=83.6331%2C22.0145&Coordinates=J2000&Projection=Tan&Size=1.5&Pixels=2048&Scaling=Log&Return=JPEG"
+        ],
+        "credit": "Digitized Sky Survey, produced at the Space Telescope Science Institute under U.S. Government grant NAG W-2166; retrieved via NASA SkyView.",
+        "license": "Free for research and education with acknowledgement",
+        "licenseUrl": "https://archive.stsci.edu/dss/acknowledging.html",
+        "description": "DSS2 Red + DSS2 Blue photographic survey, 1.5° × 1.5° gnomonic cutout centred on the target.",
+        "retrievedAt": "2026-11-15T09:06:53.274Z"
+      },
+      "processing": "Colour composite: red plate → red, blue plate → blue (×1.03 so typical stars are neutral), their mean → green; log scale with a black-point stretch. North up, east left.",
+      "notes": [
+        "Long-exposure photographic survey: shows far more colour and faint structure than the eye sees through an eyepiece."
+      ],
+      "objectSrc": "/reference/m1-object.webp",
+      "objectProcessing": "Stars removed for the eyepiece view: catalogue stars masked with the surrounding sky level, then a 7-pixel median filter to remove fainter plate stars."
+    },
+    {
+      "targetId": "m57",
+      "kind": "field",
+      "src": "/reference/m57.webp",
+      "widthPx": 2048,
+      "heightPx": 2048,
+      "fieldWidthArcsec": 5400,
+      "fieldHeightArcsec": 5400,
+      "center": {
+        "raDeg": 283.3962,
+        "decDeg": 33.0292
+      },
+      "source": {
+        "name": "NASA SkyView (Goddard Space Flight Center)",
+        "pageUrl": "https://skyview.gsfc.nasa.gov/",
+        "queryUrls": [
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Red&Position=283.3962%2C33.0292&Coordinates=J2000&Projection=Tan&Size=1.5&Pixels=2048&Scaling=Log&Return=JPEG",
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Blue&Position=283.3962%2C33.0292&Coordinates=J2000&Projection=Tan&Size=1.5&Pixels=2048&Scaling=Log&Return=JPEG"
+        ],
+        "credit": "Digitized Sky Survey, produced at the Space Telescope Science Institute under U.S. Government grant NAG W-2166; retrieved via NASA SkyView.",
+        "license": "Free for research and education with acknowledgement",
+        "licenseUrl": "https://archive.stsci.edu/dss/acknowledging.html",
+        "description": "DSS2 Red + DSS2 Blue photographic survey, 1.5° × 1.5° gnomonic cutout centred on the target.",
+        "retrievedAt": "2026-11-15T09:07:11.930Z"
+      },
+      "processing": "Colour composite: red plate → red, blue plate → blue (×0.89 so typical stars are neutral), their mean → green; log scale with a black-point stretch. North up, east left.",
+      "notes": [
+        "Long-exposure photographic survey: shows far more colour and faint structure than the eye sees through an eyepiece."
+      ],
+      "objectSrc": "/reference/m57-object.webp",
+      "objectProcessing": "Stars removed for the eyepiece view: catalogue stars masked with the surrounding sky level, then a 7-pixel median filter to remove fainter plate stars."
+    },
+    {
+      "targetId": "m27",
+      "kind": "field",
+      "src": "/reference/m27.webp",
+      "widthPx": 2048,
+      "heightPx": 2048,
+      "fieldWidthArcsec": 5400,
+      "fieldHeightArcsec": 5400,
+      "center": {
+        "raDeg": 299.9016,
+        "decDeg": 22.7212
+      },
+      "source": {
+        "name": "NASA SkyView (Goddard Space Flight Center)",
+        "pageUrl": "https://skyview.gsfc.nasa.gov/",
+        "queryUrls": [
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Red&Position=299.9016%2C22.7212&Coordinates=J2000&Projection=Tan&Size=1.5&Pixels=2048&Scaling=Log&Return=JPEG",
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Blue&Position=299.9016%2C22.7212&Coordinates=J2000&Projection=Tan&Size=1.5&Pixels=2048&Scaling=Log&Return=JPEG"
+        ],
+        "credit": "Digitized Sky Survey, produced at the Space Telescope Science Institute under U.S. Government grant NAG W-2166; retrieved via NASA SkyView.",
+        "license": "Free for research and education with acknowledgement",
+        "licenseUrl": "https://archive.stsci.edu/dss/acknowledging.html",
+        "description": "DSS2 Red + DSS2 Blue photographic survey, 1.5° × 1.5° gnomonic cutout centred on the target.",
+        "retrievedAt": "2026-11-15T09:23:46.169Z"
+      },
+      "processing": "Colour composite: red plate → red, blue plate → blue (×0.87 so typical stars are neutral), their mean → green; log scale with a black-point stretch. North up, east left. Areas with no plate data are shown as black sky.",
+      "notes": [
+        "Long-exposure photographic survey: shows far more colour and faint structure than the eye sees through an eyepiece."
+      ],
+      "objectSrc": "/reference/m27-object.webp",
+      "objectProcessing": "Stars removed for the eyepiece view: catalogue stars masked with the surrounding sky level, then a 7-pixel median filter to remove fainter plate stars."
+    },
+    {
+      "targetId": "ngc7293",
+      "kind": "field",
+      "src": "/reference/ngc7293.webp",
+      "widthPx": 2048,
+      "heightPx": 2048,
+      "fieldWidthArcsec": 5400,
+      "fieldHeightArcsec": 5400,
+      "center": {
+        "raDeg": 337.4108,
+        "decDeg": -20.8372
+      },
+      "source": {
+        "name": "NASA SkyView (Goddard Space Flight Center)",
+        "pageUrl": "https://skyview.gsfc.nasa.gov/",
+        "queryUrls": [
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Red&Position=337.4108%2C-20.8372&Coordinates=J2000&Projection=Tan&Size=1.5&Pixels=2048&Scaling=Log&Return=JPEG",
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Blue&Position=337.4108%2C-20.8372&Coordinates=J2000&Projection=Tan&Size=1.5&Pixels=2048&Scaling=Log&Return=JPEG"
+        ],
+        "credit": "Digitized Sky Survey, produced at the Space Telescope Science Institute under U.S. Government grant NAG W-2166; retrieved via NASA SkyView.",
+        "license": "Free for research and education with acknowledgement",
+        "licenseUrl": "https://archive.stsci.edu/dss/acknowledging.html",
+        "description": "DSS2 Red + DSS2 Blue photographic survey, 1.5° × 1.5° gnomonic cutout centred on the target.",
+        "retrievedAt": "2026-11-15T09:08:04.538Z"
+      },
+      "processing": "Colour composite: red plate → red, blue plate → blue (×0.67 so typical stars are neutral), their mean → green; log scale with a black-point stretch. North up, east left.",
+      "notes": [
+        "Long-exposure photographic survey: shows far more colour and faint structure than the eye sees through an eyepiece."
+      ],
+      "objectSrc": "/reference/ngc7293-object.webp",
+      "objectProcessing": "Stars removed for the eyepiece view: catalogue stars masked with the surrounding sky level, then a 7-pixel median filter to remove fainter plate stars."
+    },
+    {
+      "targetId": "m45",
+      "kind": "field",
+      "src": "/reference/m45.webp",
+      "widthPx": 2048,
+      "heightPx": 2048,
+      "fieldWidthArcsec": 16488,
+      "fieldHeightArcsec": 16488,
+      "center": {
+        "raDeg": 56.85,
+        "decDeg": 24.1167
+      },
+      "source": {
+        "name": "NASA SkyView (Goddard Space Flight Center)",
+        "pageUrl": "https://skyview.gsfc.nasa.gov/",
+        "queryUrls": [
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Red&Position=56.85%2C24.1167&Coordinates=J2000&Projection=Tan&Size=4.58&Pixels=2048&Scaling=Log&Return=JPEG",
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Blue&Position=56.85%2C24.1167&Coordinates=J2000&Projection=Tan&Size=4.58&Pixels=2048&Scaling=Log&Return=JPEG"
+        ],
+        "credit": "Digitized Sky Survey, produced at the Space Telescope Science Institute under U.S. Government grant NAG W-2166; retrieved via NASA SkyView.",
+        "license": "Free for research and education with acknowledgement",
+        "licenseUrl": "https://archive.stsci.edu/dss/acknowledging.html",
+        "description": "DSS2 Red + DSS2 Blue photographic survey, 4.58° × 4.58° gnomonic cutout centred on the target.",
+        "retrievedAt": "2026-11-15T09:25:44.455Z"
+      },
+      "processing": "Colour composite: red plate → red, blue plate → blue (×0.60 so typical stars are neutral), their mean → green; log scale with a black-point stretch. North up, east left.",
+      "notes": [
+        "Long-exposure photographic survey: shows far more colour and faint structure than the eye sees through an eyepiece."
+      ],
+      "objectSrc": "/reference/m45-object.webp",
+      "objectProcessing": "Stars removed for the eyepiece view: catalogue stars masked with the surrounding sky level, then a 7-pixel median filter to remove fainter plate stars."
+    },
+    {
+      "targetId": "m44",
+      "kind": "field",
+      "src": "/reference/m44.webp",
+      "widthPx": 2048,
+      "heightPx": 2048,
+      "fieldWidthArcsec": 14256,
+      "fieldHeightArcsec": 14256,
+      "center": {
+        "raDeg": 130.1,
+        "decDeg": 19.6667
+      },
+      "source": {
+        "name": "NASA SkyView (Goddard Space Flight Center)",
+        "pageUrl": "https://skyview.gsfc.nasa.gov/",
+        "queryUrls": [
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Red&Position=130.1%2C19.6667&Coordinates=J2000&Projection=Tan&Size=3.96&Pixels=2048&Scaling=Log&Return=JPEG",
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Blue&Position=130.1%2C19.6667&Coordinates=J2000&Projection=Tan&Size=3.96&Pixels=2048&Scaling=Log&Return=JPEG"
+        ],
+        "credit": "Digitized Sky Survey, produced at the Space Telescope Science Institute under U.S. Government grant NAG W-2166; retrieved via NASA SkyView.",
+        "license": "Free for research and education with acknowledgement",
+        "licenseUrl": "https://archive.stsci.edu/dss/acknowledging.html",
+        "description": "DSS2 Red + DSS2 Blue photographic survey, 3.96° × 3.96° gnomonic cutout centred on the target.",
+        "retrievedAt": "2026-11-15T09:09:11.642Z"
+      },
+      "processing": "Colour composite: red plate → red, blue plate → blue (×0.87 so typical stars are neutral), their mean → green; log scale with a black-point stretch. North up, east left.",
+      "notes": [
+        "Long-exposure photographic survey: shows far more colour and faint structure than the eye sees through an eyepiece."
+      ],
+      "objectSrc": "/reference/m44-object.webp",
+      "objectProcessing": "Stars removed for the eyepiece view: catalogue stars masked with the surrounding sky level, then a 7-pixel median filter to remove fainter plate stars."
+    },
+    {
+      "targetId": "double-cluster",
+      "kind": "field",
+      "src": "/reference/double-cluster.webp",
+      "widthPx": 2048,
+      "heightPx": 2048,
+      "fieldWidthArcsec": 9000,
+      "fieldHeightArcsec": 9000,
+      "center": {
+        "raDeg": 35.16,
+        "decDeg": 57.13
+      },
+      "source": {
+        "name": "NASA SkyView (Goddard Space Flight Center)",
+        "pageUrl": "https://skyview.gsfc.nasa.gov/",
+        "queryUrls": [
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Red&Position=35.16%2C57.13&Coordinates=J2000&Projection=Tan&Size=2.5&Pixels=2048&Scaling=Log&Return=JPEG",
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Blue&Position=35.16%2C57.13&Coordinates=J2000&Projection=Tan&Size=2.5&Pixels=2048&Scaling=Log&Return=JPEG"
+        ],
+        "credit": "Digitized Sky Survey, produced at the Space Telescope Science Institute under U.S. Government grant NAG W-2166; retrieved via NASA SkyView.",
+        "license": "Free for research and education with acknowledgement",
+        "licenseUrl": "https://archive.stsci.edu/dss/acknowledging.html",
+        "description": "DSS2 Red + DSS2 Blue photographic survey, 2.5° × 2.5° gnomonic cutout centred on the target.",
+        "retrievedAt": "2026-11-15T09:24:52.088Z"
+      },
+      "processing": "Colour composite: red plate → red, blue plate → blue (×0.77 so typical stars are neutral), their mean → green; log scale with a black-point stretch. North up, east left. Areas with no plate data are shown as black sky.",
+      "notes": [
+        "Long-exposure photographic survey: shows far more colour and faint structure than the eye sees through an eyepiece."
+      ],
+      "objectSrc": "/reference/double-cluster-object.webp",
+      "objectProcessing": "Stars removed for the eyepiece view: catalogue stars masked with the surrounding sky level, then a 7-pixel median filter to remove fainter plate stars."
+    },
+    {
+      "targetId": "m11",
+      "kind": "field",
+      "src": "/reference/m11.webp",
+      "widthPx": 2048,
+      "heightPx": 2048,
+      "fieldWidthArcsec": 5400,
+      "fieldHeightArcsec": 5400,
+      "center": {
+        "raDeg": 282.7708,
+        "decDeg": -6.27
+      },
+      "source": {
+        "name": "NASA SkyView (Goddard Space Flight Center)",
+        "pageUrl": "https://skyview.gsfc.nasa.gov/",
+        "queryUrls": [
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Red&Position=282.7708%2C-6.27&Coordinates=J2000&Projection=Tan&Size=1.5&Pixels=2048&Scaling=Log&Return=JPEG"
+        ],
+        "credit": "Digitized Sky Survey, produced at the Space Telescope Science Institute under U.S. Government grant NAG W-2166; retrieved via NASA SkyView.",
+        "license": "Free for research and education with acknowledgement",
+        "licenseUrl": "https://archive.stsci.edu/dss/acknowledging.html",
+        "description": "DSS2 Red photographic survey, 1.5° × 1.5° gnomonic cutout centred on the target.",
+        "retrievedAt": "2026-11-15T09:15:42.807Z"
+      },
+      "processing": "Single photographic band shown in greyscale; log scale with a black-point stretch. North up, east left.",
+      "notes": [
+        "Long-exposure photographic survey: shows far more colour and faint structure than the eye sees through an eyepiece."
+      ],
+      "objectSrc": "/reference/m11-object.webp",
+      "objectProcessing": "Stars removed for the eyepiece view: catalogue stars masked with the surrounding sky level, then a 7-pixel median filter to remove fainter plate stars."
+    },
+    {
+      "targetId": "m13",
+      "kind": "field",
+      "src": "/reference/m13.webp",
+      "widthPx": 2048,
+      "heightPx": 2048,
+      "fieldWidthArcsec": 5400,
+      "fieldHeightArcsec": 5400,
+      "center": {
+        "raDeg": 250.4235,
+        "decDeg": 36.4613
+      },
+      "source": {
+        "name": "NASA SkyView (Goddard Space Flight Center)",
+        "pageUrl": "https://skyview.gsfc.nasa.gov/",
+        "queryUrls": [
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Red&Position=250.4235%2C36.4613&Coordinates=J2000&Projection=Tan&Size=1.5&Pixels=2048&Scaling=Log&Return=JPEG",
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Blue&Position=250.4235%2C36.4613&Coordinates=J2000&Projection=Tan&Size=1.5&Pixels=2048&Scaling=Log&Return=JPEG"
+        ],
+        "credit": "Digitized Sky Survey, produced at the Space Telescope Science Institute under U.S. Government grant NAG W-2166; retrieved via NASA SkyView.",
+        "license": "Free for research and education with acknowledgement",
+        "licenseUrl": "https://archive.stsci.edu/dss/acknowledging.html",
+        "description": "DSS2 Red + DSS2 Blue photographic survey, 1.5° × 1.5° gnomonic cutout centred on the target.",
+        "retrievedAt": "2026-11-15T09:10:22.595Z"
+      },
+      "processing": "Colour composite: red plate → red, blue plate → blue (×0.99 so typical stars are neutral), their mean → green; log scale with a black-point stretch. North up, east left.",
+      "notes": [
+        "Long-exposure photographic survey: shows far more colour and faint structure than the eye sees through an eyepiece."
+      ],
+      "objectSrc": "/reference/m13-object.webp",
+      "objectProcessing": "Stars removed for the eyepiece view: catalogue stars masked with the surrounding sky level, then a 7-pixel median filter to remove fainter plate stars."
+    },
+    {
+      "targetId": "m22",
+      "kind": "field",
+      "src": "/reference/m22.webp",
+      "widthPx": 2048,
+      "heightPx": 2048,
+      "fieldWidthArcsec": 5400,
+      "fieldHeightArcsec": 5400,
+      "center": {
+        "raDeg": 279.0998,
+        "decDeg": -23.9048
+      },
+      "source": {
+        "name": "NASA SkyView (Goddard Space Flight Center)",
+        "pageUrl": "https://skyview.gsfc.nasa.gov/",
+        "queryUrls": [
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS2+Red&Position=279.0998%2C-23.9048&Coordinates=J2000&Projection=Tan&Size=1.5&Pixels=2048&Scaling=Log&Return=JPEG",
+          "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl?Survey=DSS1+Blue&Position=279.0998%2C-23.9048&Coordinates=J2000&Projection=Tan&Size=1.5&Pixels=2048&Scaling=Log&Return=JPEG"
+        ],
+        "credit": "Digitized Sky Survey, produced at the Space Telescope Science Institute under U.S. Government grant NAG W-2166; retrieved via NASA SkyView.",
+        "license": "Free for research and education with acknowledgement",
+        "licenseUrl": "https://archive.stsci.edu/dss/acknowledging.html",
+        "description": "DSS2 Red + DSS1 Blue photographic survey, 1.5° × 1.5° gnomonic cutout centred on the target.",
+        "retrievedAt": "2026-11-15T09:16:22.495Z"
+      },
+      "processing": "Colour composite: red plate → red, blue plate → blue (×1.00 so typical stars are neutral), their mean → green; log scale with a black-point stretch. North up, east left.",
+      "notes": [
+        "Long-exposure photographic survey: shows far more colour and faint structure than the eye sees through an eyepiece."
+      ],
+      "objectSrc": "/reference/m22-object.webp",
+      "objectProcessing": "Stars removed for the eyepiece view: catalogue stars masked with the surrounding sky level, then a 7-pixel median filter to remove fainter plate stars."
+    }
+  ]
+}
