@@ -15,6 +15,11 @@
 
 # next.js
 /.next/
+/.next-dev/
+/.next-e2e/
+/.next-claude/
+/.next-https/
+/certificates/
 /out/
 
 # production
@@ -39,3 +44,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/
+!.env.example
+
+# make start
+/.dev-server.pid
+/.tunnel.pid
+/.tunnel.log
