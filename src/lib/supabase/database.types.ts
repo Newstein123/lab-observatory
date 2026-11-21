@@ -57,6 +57,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"discoveries": {
+                  Row: {
+                    "created_at": string,"feature_id": string | null,"id": string,"kind": string,"name": string,"note": string | null,"observed_at": string | null,"owner_id": string,"setup_summary": string | null,"site_name": string | null,"target_id": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"feature_id"?: string | null,"id"?: string,"kind": string,"name": string,"note"?: string | null,"observed_at"?: string | null,"owner_id"?: string,"setup_summary"?: string | null,"site_name"?: string | null,"target_id": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"feature_id"?: string | null,"id"?: string,"kind"?: string,"name"?: string,"note"?: string | null,"observed_at"?: string | null,"owner_id"?: string,"setup_summary"?: string | null,"site_name"?: string | null,"target_id"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"observation_projects": {
                   Row: {
                     "created_at": string,"description": string | null,"id": string,"name": string,"owner_id": string,"target_ids": (string)[],"updated_at": string
@@ -199,6 +213,12 @@ isOneToOne: false
                            },
 "is_valid_component":
 { Args: { "component_type": string,"spec": Json }; Returns: boolean
+                           },
+"is_valid_conditions":
+{ Args: { "c": Json }; Returns: boolean
+                           },
+"is_valid_view_site":
+{ Args: { "v": Json }; Returns: boolean
                            },
 "json_number_between":
 { Args: { "hi": number,"key": string,"lo": number,"s": Json }; Returns: boolean

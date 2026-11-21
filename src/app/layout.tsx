@@ -14,8 +14,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} min-h-screen antialiased`}>
+    // Browser extensions (Grammarly, ColorZilla, password managers, translators…)
+    // add attributes to <html>/<body> before React loads. This ignores those
+    // attributes on these two elements only; mismatches inside still warn.
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${geistSans.variable} ${geistMono.variable} min-h-screen antialiased`} suppressHydrationWarning>
         <ToastProvider>
           <SiteHeader />
           {/* Bottom padding leaves room for the mobile tab bar. */}

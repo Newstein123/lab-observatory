@@ -1,0 +1,23 @@
+{
+  "generatedBy": "scripts/fetch-planet-data.mjs",
+  "map": {
+    "src": "/explorer/jupiter/map-2k.webp",
+    "kind": "observation-mosaic",
+    "widthPx": 2048,
+    "heightPx": 1024,
+    "projection": "simple cylindrical, planetocentric latitude, as seen from outside (east to the right)",
+    "grsU": 0.3667,
+    "grsLatCentricDeg": -21,
+    "source": {
+      "name": "NASA Photojournal PIA07782 — Cassini's Best Maps of Jupiter (cylindrical map)",
+      "pageUrl": "https://photojournal.jpl.nasa.gov/catalog/PIA07782",
+      "credit": "NASA/JPL/Space Science Institute",
+      "license": "Public domain"
+    },
+    "processing": "Resized to 2048×1024. The Great Red Spot was located automatically (reddest patch 15–30° S) at map x = 36.7% to align the map's longitudes with the spot's current estimated position.",
+    "notes": [
+      "Cassini narrow-angle images from 11–12 December 2000. Jupiter's clouds change constantly: belts, ovals and the Great Red Spot (which has shrunk since) look different today."
+    ],
+    "retrievedAt": "2026-11-21"
+  }
+}

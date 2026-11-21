@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { signUpFreshUser } from "./helpers";
+import { fieldGroup, signUpFreshUser } from "./helpers";
 
 /**
  * End-to-end coverage for equipment, configurations and sessions
@@ -81,17 +81,17 @@ test("AC-02/AC-04: multiple configurations from one profile; edit, duplicate and
   await page.getByRole("button", { name: "Save configuration" }).click();
   await expect(toolbarState(page)).toHaveText(/Saved · v1/);
   await expect(page.getByRole("button", { name: "Saved", exact: true })).toBeDisabled();
-  await expect(page.getByRole("group", { name: "Telescope" }).getByLabel(/Aperture/)).toBeDisabled();
+  await expect((await fieldGroup(page, "Telescope")).getByLabel(/Aperture/)).toBeDisabled();
 
   // Edit → unsaved → save as v2.
-  await page.getByRole("group", { name: "Eyepiece" }).getByLabel(/Focal length/).fill("10");
+  await (await fieldGroup(page, "Eyepiece")).getByLabel(/Focal length/).fill("10");
   await expect(toolbarState(page)).toHaveText(/Unsaved changes/);
   await expect(metric(page, /^Magnification/)).toContainText("100×");
   await page.getByRole("button", { name: "Save changes" }).click();
   await expect(toolbarState(page)).toHaveText(/Saved · v2/);
 
   // Second configuration from the same profile.
-  await page.getByRole("group", { name: "Eyepiece" }).getByLabel(/Focal length/).fill("32");
+  await (await fieldGroup(page, "Eyepiece")).getByLabel(/Focal length/).fill("32");
   await page.getByRole("button", { name: "Save as new" }).click();
   await expect(page.getByText(/Saved as a new configuration/)).toBeVisible();
 
@@ -122,12 +122,12 @@ test("AC-03: save a hypothetical configuration without a profile", async ({ page
 test("AC-07/AC-08: mode switch keeps target and setup; inputs update results", async ({ page }) => {
   await page.goto("/lab/simulate?target=jupiter");
   await expect(metric(page, /^Magnification/)).toContainText("40×");
-  await page.getByRole("group", { name: "Eyepiece" }).getByLabel(/Focal length/).fill("10");
+  await (await fieldGroup(page, "Eyepiece")).getByLabel(/Focal length/).fill("10");
   await expect(metric(page, /^Magnification/)).toContainText("100×");
 
   await page.getByRole("tab", { name: "Camera view" }).click();
   await expect(metric(page, /^Image scale/)).toContainText("0.78″/px");
-  await expect(page.getByRole("button", { name: "Jupiter" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: "Jupiter", exact: true })).toHaveAttribute("aria-pressed", "true");
 
   await page.getByRole("tab", { name: "Eyepiece view" }).click();
   await expect(metric(page, /^Magnification/)).toContainText("100×");
@@ -135,7 +135,7 @@ test("AC-07/AC-08: mode switch keeps target and setup; inputs update results", a
 
 test("unsaved edits survive moving between Lab steps and reloading", async ({ page }) => {
   await page.goto("/lab/simulate?target=moon");
-  await page.getByRole("group", { name: "Eyepiece" }).getByLabel(/Focal length/).fill("10");
+  await (await fieldGroup(page, "Eyepiece")).getByLabel(/Focal length/).fill("10");
   await expect(metric(page, /^Magnification/)).toContainText("100×");
   await page.getByRole("link", { name: "Equipment", exact: true }).click();
   await expect(page).toHaveURL(/\/lab\/configure/);
@@ -159,7 +159,7 @@ test("AC-11: a saved session reopens unchanged after the configuration is edited
   // Edit and save the original configuration.
   await page.getByRole("link", { name: /saved configuration v1/ }).click();
   await expect(toolbarState(page)).toHaveText(/Saved · v1/);
-  await page.getByRole("group", { name: "Eyepiece" }).getByLabel(/Focal length/).fill("6");
+  await (await fieldGroup(page, "Eyepiece")).getByLabel(/Focal length/).fill("6");
   await page.getByRole("button", { name: "Save changes" }).click();
   await expect(toolbarState(page)).toHaveText(/Saved · v2/);
 
@@ -174,7 +174,7 @@ test("AC-11: a saved session reopens unchanged after the configuration is edited
 
 test("invalid input shows a field error and keeps the last valid result", async ({ page }) => {
   await page.goto("/lab/simulate");
-  await page.getByRole("group", { name: "Telescope" }).getByLabel(/Aperture/).fill("0");
+  await (await fieldGroup(page, "Telescope")).getByLabel(/Aperture/).fill("0");
   await expect(page.getByText("Must be at least 10").first()).toBeVisible();
   await expect(page.getByText("Inputs invalid — showing last valid result")).toBeVisible();
   await expect(page.getByRole("button", { name: "Save configuration" })).toBeDisabled();

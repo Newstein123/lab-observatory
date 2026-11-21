@@ -6,6 +6,10 @@ import { applyTint, filterTint } from "./filter-tint";
 import { drawSatellites, type SatelliteMark } from "./satellite-drawing";
 import type { Satellite } from "@/modules/targets/satellites";
 import { drawTarget, type LoadedReference } from "./target-drawing";
+import { atmosphericDimming, horizonTint, type ViewAtmosphere, type ViewPhase } from "./atmosphere";
+import { drawClouds } from "./clouds";
+import { coreConcentration } from "@/modules/targets/reach";
+import { cloudColour } from "./eyepiece-view";
 
 export interface DrawCameraOptions {
   target: CuratedTarget;
@@ -17,6 +21,12 @@ export interface DrawCameraOptions {
   filterKind?: FilterKind;
   /** The planet's moons at the chosen time (planets only). */
   satellites?: Satellite[];
+  atmosphere?: ViewAtmosphere;
+  phase?: ViewPhase;
+  /** Turn the planet (and nothing else) so its pole sits at this position angle (see drawTarget). */
+  bodyRotationDeg?: number;
+  /** The telescope nudged off the target: where the target sits from the frame centre, CSS px. */
+  panPx?: { x: number; y: number };
 }
 
 export interface CameraDrawInfo extends CameraLayout {
@@ -39,9 +49,17 @@ export function drawCameraView(
   ctx: CanvasRenderingContext2D,
   result: CameraResult,
   displayWidthPx: number,
-  { target, zoom, gain, exposureS, reference, filterKind, satellites }: DrawCameraOptions,
+  { target, zoom, gain, exposureS, reference, filterKind, satellites, atmosphere, phase, bodyRotationDeg, panPx }: DrawCameraOptions,
 ): CameraDrawInfo {
-  const layout = computeCameraLayout(result, displayWidthPx, { category: target.category, zoom, gain, exposureS, surfaceBrightness: surfaceBrightness(target) });
+  const layout = computeCameraLayout(result, displayWidthPx, {
+    category: target.category,
+    zoom,
+    gain,
+    exposureS,
+    surfaceBrightness: surfaceBrightness(target),
+    skyMag: atmosphere?.skyMag,
+    coreConcentrationMag: coreConcentration(target),
+  });
   const { renderWidthPx: w, renderHeightPx: h } = layout;
 
   const off = document.createElement("canvas");
@@ -53,7 +71,12 @@ export function drawCameraView(
 
   octx.fillStyle = "#000";
   octx.fillRect(0, 0, w, h);
-  const level = layout.level * (result.metrics.filterTransmission?.value ?? 1);
+  const hidden = atmosphere !== undefined && atmosphere.altitudeDeg < 0;
+  // The sensor loses light to the air and cloud. Unlike the eye it does not lose
+  // contrast to a bright sky (that is subtracted); the sky's cost is its noise (layout).
+  const air = atmosphere ? atmosphericDimming(target, atmosphere) : 1;
+  // Below the horizon nothing reaches the sensor but sky.
+  const level = hidden ? 0 : layout.level * (result.metrics.filterTransmission?.value ?? 1) * air;
   // Untracked drift (east–west, shown horizontally) in render pixels.
   const sensorPxAcross = layout.visibleWidthArcsec / result.metrics.imageScale.value;
   const trailPx = (result.metrics.trailPixels?.value ?? 0) * (w / sensorPxAcross);
@@ -63,11 +86,13 @@ export function drawCameraView(
   octx.globalCompositeOperation = "lighter";
   for (let i = 0; i < steps; i++) {
     const dx = steps === 1 ? 0 : (i / (steps - 1) - 0.5) * trailPx;
-    octx.setTransform(1, 0, 0, 1, w / 2 + dx, h / 2);
+    // Pan is in display px; the offscreen render may be smaller (one px per sensor px).
+    const k = w / displayWidthPx;
+    octx.setTransform(1, 0, 0, 1, w / 2 + dx + (panPx?.x ?? 0) * k, h / 2 + (panPx?.y ?? 0) * k);
     octx.globalAlpha = level / steps;
     // Additive, so the copies together carry the light of one exposure.
-    drawTarget(octx, target, layout.targetMajorPx, layout.targetMinorPx, { color: true, reference, blend: "lighter" });
-    if (satellites?.length) {
+    if (!hidden) drawTarget(octx, target, layout.targetMajorPx, layout.targetMinorPx, { color: true, reference, blend: "lighter", phase, rotationDeg: bodyRotationDeg });
+    if (satellites?.length && !hidden) {
       octx.save();
       octx.filter = "none";
       const marks = drawSatellites(octx, satellites, layout.targetMajorPx, {
@@ -85,18 +110,24 @@ export function drawCameraView(
     }
   }
   octx.restore();
+  if (atmosphere) {
+    applyTint(octx, horizonTint(atmosphere), w, h);
+    drawClouds(octx, w, h, atmosphere.cloud, cloudColour(atmosphere).map((v) => v * Math.min(1, 0.3 + layout.skyLevel * 3)) as [number, number, number]);
+  }
   applyTint(octx, filterTint(filterKind), w, h);
 
-  if (layout.noiseSigma > 0) {
+  if (layout.noiseSigma > 0 || layout.skyLevel > 0) {
     const img = octx.getImageData(0, 0, w, h);
     const d = img.data;
     const rand = mulberry32(NOISE_SEED);
+    // Sky glow left after the usual background subtraction: warm for street light.
+    const ped = (SKY_PEDESTAL + layout.skyLevel) * 255;
+    const warm = atmosphere?.source === "light pollution" ? [1.1, 0.95, 0.8] : atmosphere?.source === "twilight" || atmosphere?.source === "moonlight" ? [0.85, 0.95, 1.15] : [1, 1, 1];
     for (let i = 0; i < d.length; i += 4) {
-      const n = gaussian(rand) * layout.noiseSigma * 255;
-      const ped = SKY_PEDESTAL * 255;
-      d[i] = clampByte(d[i] + ped + n);
-      d[i + 1] = clampByte(d[i + 1] + ped + n);
-      d[i + 2] = clampByte(d[i + 2] + ped + n);
+      const n = layout.noiseSigma > 0 ? gaussian(rand) * layout.noiseSigma * 255 : 0;
+      d[i] = clampByte(d[i] + ped * warm[0] + n);
+      d[i + 1] = clampByte(d[i + 1] + ped * warm[1] + n);
+      d[i + 2] = clampByte(d[i + 2] + ped * warm[2] + n);
     }
     octx.putImageData(img, 0, 0);
   }

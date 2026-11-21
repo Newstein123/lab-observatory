@@ -10,7 +10,7 @@
 
 export interface Satellite {
   name: string;
-  /** Offset from the planet's centre in planet equatorial radii: west +, north +. */
+  /** Offset from the planet's centre in planet equatorial radii: west +, north + (galileanMoons: along the planet's equator and axis; satellitesOf: celestial west and north). */
   x: number;
   y: number;
   /** Nearer to us than the planet (true) or beyond it. */
@@ -21,16 +21,19 @@ export interface Satellite {
   magnitude: number;
   /** Diameter in planet equatorial radii. */
   diameter: number;
+  /** Towards the observer, same units as x and y (when known). */
+  z?: number;
 }
 
 const D2R = Math.PI / 180;
 const sin = (deg: number) => Math.sin(deg * D2R);
 const cos = (deg: number) => Math.cos(deg * D2R);
 
-/** Julian Day (UT) of a JavaScript date. ΔT (~1 min) is ignored: Io moves < 0.2° in that time. */
-export function julianDay(date: Date): number {
-  return date.getTime() / 86_400_000 + 2_440_587.5;
-}
+// ΔT (~1 min) is ignored: Io moves < 0.2° in that time.
+import { poleAngleDeg } from "@/modules/sky/planets";
+import { saturnMoons, type SaturnMoonData } from "./saturn-moons";
+import { julianDay } from "@/modules/sky/time";
+export { julianDay };
 
 const JUPITER_EQUATORIAL_KM = 71_492;
 /** Jupiter's polar radius / equatorial radius. */
@@ -95,6 +98,7 @@ export function galileanMoons(date: Date): Satellite[] {
       name: m.name,
       x,
       y,
+      z: rad * cos(u),
       inFront,
       hidden: onDisc,
       magnitude: m.magnitude,
@@ -105,12 +109,34 @@ export function galileanMoons(date: Date): Satellite[] {
 
 /** Targets with moons we can place. */
 export function hasSatellites(targetId: string): boolean {
-  return targetId === "jupiter";
+  return targetId === "jupiter" || targetId === "saturn";
 }
 
-export function satellitesOf(targetId: string, date: Date): Satellite[] {
-  return targetId === "jupiter" ? galileanMoons(date) : [];
+/**
+ * Moons as placed on the sky (celestial north up). Jupiter: Meeus gives them
+ * along the planet's equator, which is turned by the pole's position angle;
+ * units are Jupiter's equatorial radius. Saturn: from the fitted Horizons
+ * models (pass the loaded data); units are the rings' outer radius, the
+ * catalogued size of Saturn.
+ */
+export function satellitesOf(targetId: string, date: Date, saturnData?: SaturnMoonData): Satellite[] {
+  if (targetId === "jupiter") return rotateToSky(galileanMoons(date), poleAngleDeg(targetId, date) ?? 0);
+  if (targetId === "saturn" && saturnData) return saturnMoons(saturnData, date, poleAngleDeg(targetId, date) ?? 0);
+  return [];
 }
+
+/** Turn offsets from the planet's equatorial frame onto the sky (pole at position angle `poleDeg`). */
+export function rotateToSky(satellites: Satellite[], poleDeg: number): Satellite[] {
+  const c = Math.cos(poleDeg * D2R);
+  const s = Math.sin(poleDeg * D2R);
+  return satellites.map((m) => {
+    const east = -m.x;
+    const north = m.y;
+    return { ...m, x: -(east * c + north * s), y: -east * s + north * c };
+  });
+}
+
+export { SATURN_MOON_METHOD } from "./saturn-moons";
 
 export const SATELLITE_METHOD =
   "Positions calculated with the low-accuracy theory in Meeus, Astronomical Algorithms, ch. 44. Brightness is a typical value; eclipses by Jupiter's shadow are not shown.";

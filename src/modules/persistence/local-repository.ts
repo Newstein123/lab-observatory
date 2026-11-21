@@ -20,6 +20,7 @@ import {
   type ObservationProject,
 } from "@/modules/projects/models";
 import { simulationSessionSchema, type NewSession, type SimulationSession } from "@/modules/sessions/models";
+import { discoveryInputSchema, discoveryKey, discoveryNoteSchema, discoverySchema, type Discovery } from "@/modules/discoveries/models";
 import { NotFoundError, ValidationError, type ObservatoryRepository } from "./repository";
 
 /**
@@ -39,7 +40,7 @@ export interface KeyValueStore {
 
 /** Storage key (unchanged across document schema versions so data is kept). */
 export const STORAGE_KEY = "universal-observatory:v1";
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 
 const documentSchema = z.object({
   schemaVersion: z.literal(SCHEMA_VERSION),
@@ -48,6 +49,7 @@ const documentSchema = z.object({
   configurations: z.array(telescopeConfigurationSchema),
   sessions: z.array(simulationSessionSchema),
   projects: z.array(observationProjectSchema),
+  discoveries: z.array(discoverySchema),
 });
 
 interface StoreDocument {
@@ -57,6 +59,7 @@ interface StoreDocument {
   configurations: TelescopeConfiguration[];
   sessions: SimulationSession[];
   projects: ObservationProject[];
+  discoveries: Discovery[];
 }
 
 const emptyDocument = (): StoreDocument => ({
@@ -66,17 +69,23 @@ const emptyDocument = (): StoreDocument => ({
   configurations: [],
   sessions: [],
   projects: [],
+  discoveries: [],
 });
 
 /**
- * Bring older documents up to date. v1 → v2 adds accessories and projects;
- * profiles without a status are read as "owned" by the profile schema.
+ * Bring older documents up to date. v1 → v2 adds accessories and projects
+ * (profiles without a status are read as "owned" by the profile schema);
+ * v2 → v3 adds discoveries.
  */
 function upgrade(raw: unknown): unknown {
-  if (raw && typeof raw === "object" && (raw as { schemaVersion?: unknown }).schemaVersion === 1) {
-    return { ...raw, schemaVersion: 2, accessories: [], projects: [] };
+  let doc = raw;
+  if (doc && typeof doc === "object" && (doc as { schemaVersion?: unknown }).schemaVersion === 1) {
+    doc = { ...doc, schemaVersion: 2, accessories: [], projects: [] };
   }
-  return raw;
+  if (doc && typeof doc === "object" && (doc as { schemaVersion?: unknown }).schemaVersion === 2) {
+    doc = { ...doc, schemaVersion: 3, discoveries: [] };
+  }
+  return doc;
 }
 
 function parseOrThrow<T>(schema: z.ZodType<T>, value: unknown): T {
@@ -339,6 +348,37 @@ export function createLocalRepository(store: KeyValueStore, opts: LocalRepositor
       mutate((doc) => {
         const project = doc.projects[findIndex(doc.projects, projectId, "Project")];
         project.sessionIds = project.sessionIds.filter((s) => s !== sessionId);
+      });
+    },
+
+    async listDiscoveries() {
+      return clone(load().discoveries).sort(byNewest);
+    },
+    async createDiscovery(input) {
+      const data = parseOrThrow(discoveryInputSchema, input);
+      const existing = load().discoveries.find((d) => discoveryKey(d) === discoveryKey(data));
+      if (existing) return clone(existing);
+      return mutate((doc) => {
+        const t = now();
+        const discovery: Discovery = { ...data, id: newId(), createdAt: t, updatedAt: t };
+        doc.discoveries.push(discovery);
+        return clone(discovery);
+      });
+    },
+    async updateDiscoveryNote(id, note) {
+      const text = note ? parseOrThrow(discoveryNoteSchema, note) : "";
+      return mutate((doc) => {
+        const i = findIndex(doc.discoveries, id, "Discovery");
+        const { note: _previous, ...rest } = doc.discoveries[i];
+        void _previous;
+        const d: Discovery = { ...rest, ...(text ? { note: text } : {}), updatedAt: now() };
+        doc.discoveries[i] = d;
+        return clone(d);
+      });
+    },
+    async deleteDiscovery(id) {
+      mutate((doc) => {
+        doc.discoveries.splice(findIndex(doc.discoveries, id, "Discovery"), 1);
       });
     },
 

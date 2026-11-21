@@ -50,6 +50,18 @@ describe("reach (estimated)", () => {
     expect(reach("uranus", planetary, "camera")).not.toBe("out_of_reach");
   });
 
+  it("charges extinction once: hazy air acts like a fainter target, not twice", () => {
+    // A small cluster near the faint limit of a 60 mm under a suburban sky.
+    const tiny = { ...dob200, telescope: { ...dob200.telescope, apertureMm: 60, focalLengthMm: 700 } };
+    const sky = { skyMag: 19.5, altitudeDeg: 30 };
+    for (let m = 6; m <= 13; m += 0.25) {
+      const base = { ...t("m13"), magnitude: m };
+      const hazy = assessReach(base, tiny, "eyepiece", { ...sky, extinctionMag: 1.5 });
+      const fainter = assessReach({ ...base, magnitude: m + 1.5 }, tiny, "eyepiece", sky);
+      expect(hazy.reach, `mag ${m}`).toBe(fainter.reach);
+    }
+  });
+
   it("flags targets larger than the field, with reasons", () => {
     const r = assessReach(t("m31"), dob200, "eyepiece");
     expect(r.reach).toBe("challenging");

@@ -1,5 +1,6 @@
 "use client";
 
+import { sessionAtmosphere, sessionPhase } from "@/modules/sessions/view";
 import { useMemo } from "react";
 import { SimulationViewport, type ViewSettings } from "@/components/lab/simulation-viewport";
 import type { SimulationSession } from "@/modules/sessions/models";
@@ -16,6 +17,8 @@ export function SessionThumbnail({ session, size = 72 }: { session: SimulationSe
       gain: session.exposure?.gain ?? 1,
       exposureS: session.exposure?.exposureS ?? 0,
       filterKind: session.configurationSnapshot.filter?.kind,
+      atmosphere: sessionAtmosphere(session),
+      phase: sessionPhase(session),
     }),
     [session],
   );

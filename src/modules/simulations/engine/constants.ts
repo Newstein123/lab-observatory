@@ -4,7 +4,7 @@ import type { AssumptionId } from "./models";
  * Engine version. Bump on ANY change to a formula, assumption or model, so
  * saved sessions can be reproduced against the version that produced them.
  */
-export const ENGINE_VERSION = "1.2.0";
+export const ENGINE_VERSION = "1.3.0";
 
 /** Arcseconds per radian (180 / π × 3600). */
 export const ARCSEC_PER_RADIAN = 206_264.806;
@@ -47,6 +47,16 @@ export const ASSUMPTIONS: Record<AssumptionId, string> = {
     "Filter transmission is a typical value for this kind of filter and target, not a measured curve. Real filters and the target's spectrum vary.",
   sidereal_drift_rate:
     "An untracked mount lets the sky drift at 15.04″ per second × cos(declination). Field rotation and periodic error are not modelled.",
+  sky_limited_magnitude:
+    "With a sky brightness given, the limiting magnitude is lowered by how much that sky (darkened by the magnification) cuts the eye's reach compared with a pristine sky, using the SQM→naked-eye-limit relation. Extinction and cloud are subtracted.",
+  sky_brightness_estimated:
+    "Sky brightness combines light pollution (Bortle class), natural airglow, moonlight (Krisciunas & Schaefer 1991) and twilight. Simplified; real skies vary by direction and night.",
+  extinction_airmass:
+    "Atmospheric dimming = extinction coefficient × air mass, with the coefficient from Rayleigh scattering, ozone and aerosol optical depth.",
+  seeing_airmass:
+    "Seeing along the line of sight grows as air mass^0.6, the standard scaling for turbulence.",
+  cloud_transmission:
+    "Cloud is treated as an average loss of light; real cloud is patchy and changes minute by minute.",
   declination_unknown_equator:
     "This target moves across the sky, so its declination is not fixed here; drift is computed for the celestial equator (the fastest case).",
 };

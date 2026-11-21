@@ -1,9 +1,11 @@
 import { Panel } from "@/components/ui/fields";
+import { Icons } from "@/components/ui/icons";
 import { ProvenanceBadge, ProvenanceLegend } from "@/components/ui/provenance-badge";
 import { ASSUMPTIONS, type Metric, type SimulationResult } from "@/modules/simulations/engine";
 import { CAMERA_METRIC_ORDER, EYEPIECE_METRIC_ORDER, METRIC_PRESENTATION } from "@/modules/simulations/presentation";
 
-export function MetricsPanel({ result }: { result: SimulationResult }) {
+/** `bare`: no outer cards (inside another card, e.g. a tab). */
+export function MetricsPanel({ result, bare = false }: { result: SimulationResult; bare?: boolean }) {
   const rows: [string, Metric][] =
     result.mode === "eyepiece"
       ? EYEPIECE_METRIC_ORDER.flatMap((k) => (result.metrics[k] ? [[k, result.metrics[k]!] as [string, Metric]] : []))
@@ -11,17 +13,14 @@ export function MetricsPanel({ result }: { result: SimulationResult }) {
 
   return (
     <div className="space-y-4">
-      <Panel
-        title="Results"
-        actions={<span className="font-mono text-[11px] text-muted">engine v{result.engineVersion}</span>}
-      >
+      <Panel title="Results" icon={<Icons.Search />} className={bare ? "!border-0 !bg-none !p-0 [&>div:first-child]:sr-only" : ""}>
         <ul className="divide-y divide-border">
           {rows.map(([key, metric]) => {
             const p = METRIC_PRESENTATION[key as keyof typeof METRIC_PRESENTATION];
             return (
               <li key={key}>
                 <details className="group py-2">
-                  <summary className="flex cursor-pointer list-none items-center gap-2 text-sm [&::-webkit-details-marker]:hidden">
+                  <summary className="-mx-2 flex cursor-pointer list-none items-center gap-2 rounded-md px-2 text-sm hover:bg-surface-raised/50 [&::-webkit-details-marker]:hidden">
                     <span className="flex-1 text-muted group-open:text-foreground">{p.label}</span>
                     <span className="font-mono tabular-nums">{p.format(metric)}</span>
                     <ProvenanceBadge kind={metric.kind} />
@@ -45,11 +44,11 @@ export function MetricsPanel({ result }: { result: SimulationResult }) {
       </Panel>
 
       {result.warnings.length > 0 && (
-        <Panel title="Notes on this setup">
+        <Panel title="Notes on this setup" icon={<Icons.Warning />}>
           <ul className="space-y-2 text-sm" role="list">
             {result.warnings.map((w) => (
-              <li key={w.code} className="flex gap-2">
-                <span aria-hidden className="text-warning">▲</span>
+              <li key={w.code} className="flex gap-2 rounded-lg border border-warning/20 bg-warning/5 px-2.5 py-2">
+                <Icons.Warning className="mt-0.5 size-4 shrink-0 text-warning" />
                 <span>{w.message}</span>
               </li>
             ))}
@@ -57,11 +56,14 @@ export function MetricsPanel({ result }: { result: SimulationResult }) {
         </Panel>
       )}
 
-      <Panel title="Assumptions & limitations">
-        <details>
-          <summary className="cursor-pointer text-sm text-muted">
-            {result.assumptions.length} assumptions apply to this result
-          </summary>
+      <details className="glass group/a rounded-2xl p-4">
+        <summary className="flex cursor-pointer list-none items-center gap-2 [&::-webkit-details-marker]:hidden">
+          <Icons.Layers className="size-[18px] text-accent" />
+          <h2 className="flex-1 text-[15px] font-semibold tracking-tight">Assumptions &amp; limitations</h2>
+          <span className="text-xs text-muted">{result.assumptions.length} apply</span>
+          <Icons.ChevronDown className="size-4 text-muted transition-transform group-open/a:rotate-180" />
+        </summary>
+        <div>
           <ul className="mt-2 list-disc space-y-1.5 pl-5 text-xs text-muted">
             {result.assumptions.map((a) => (
               <li key={a}>{ASSUMPTIONS[a]}</li>
@@ -79,11 +81,11 @@ export function MetricsPanel({ result }: { result: SimulationResult }) {
               0.6° of the target, so very wide fields show fewer faint stars towards the edge.
             </li>
           </ul>
-        </details>
         <div className="mt-4 border-t border-border pt-3">
           <ProvenanceLegend />
         </div>
-      </Panel>
+        </div>
+      </details>
     </div>
   );
 }

@@ -54,6 +54,21 @@ describe.skipIf(!enabled)("supabase", () => {
       expect((await a.getProfile(p.id))?.name).toBe(PROFILE.name);
     });
 
+    it("another user cannot see, change or delete a discovery, and saving the same thing does not collide", async () => {
+      const a = createSupabaseRepository(alice.client);
+      const b = createSupabaseRepository(bob.client);
+      const d = await a.createDiscovery({ targetId: "moon", kind: "feature", featureId: "tycho", name: "Tycho" });
+      expect((await b.listDiscoveries()).map((x) => x.id)).not.toContain(d.id);
+      await expect(b.updateDiscoveryNote(d.id, "mine now")).rejects.toBeInstanceOf(NotFoundError);
+      await expect(b.deleteDiscovery(d.id)).rejects.toBeInstanceOf(NotFoundError);
+      // Bob can save the same feature for himself.
+      const mine = await b.createDiscovery({ targetId: "moon", kind: "feature", featureId: "tycho", name: "Tycho" });
+      expect(mine.id).not.toBe(d.id);
+      // The database itself refuses a feature discovery without a feature id.
+      const { error } = await alice.client.from("discoveries").insert({ target_id: "moon", kind: "feature", name: "No id" });
+      expect(error?.code).toBe("23514");
+    });
+
     it("another user cannot link a configuration to someone else's profile", async () => {
       const p = await createSupabaseRepository(alice.client).createProfile(PROFILE);
       await expect(

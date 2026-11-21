@@ -41,7 +41,8 @@ describe("local repository: storage specifics", () => {
     expect(await r.listAccessories()).toEqual([]);
     expect(await r.listProjects()).toEqual([]);
     await r.createProject({ name: "New", targetIds: [] });
-    expect(JSON.parse(store.dump()[STORAGE_KEY]).schemaVersion).toBe(2);
+    expect(JSON.parse(store.dump()[STORAGE_KEY]).schemaVersion).toBe(3);
+    expect(await r.listDiscoveries()).toEqual([]);
   });
 
   it("sets aside corrupt data instead of crashing", async () => {

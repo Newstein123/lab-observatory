@@ -2,11 +2,20 @@
 
 import { useMemo, useState } from "react";
 import { ProvenanceBadge } from "@/components/ui/provenance-badge";
+import { Icons } from "@/components/ui/icons";
 import { Tabs } from "@/components/ui/tabs";
+import { TargetGlyph } from "./target-glyph";
 import { TARGET_GROUPS, TARGETS, type CuratedTarget } from "@/modules/targets/catalogue";
 import type { ReachAssessment } from "@/modules/targets/reach";
 
 type GroupId = (typeof TARGET_GROUPS)[number]["category"];
+
+const GROUP_ICON: Partial<Record<GroupId, (p: { className?: string }) => React.ReactNode>> = {
+  solar: Icons.Sun,
+  galaxy: Icons.Galaxy,
+  nebula: Icons.Nebula,
+  cluster: Icons.Sparkles,
+};
 
 const groupOf = (t: CuratedTarget): GroupId => TARGET_GROUPS.find((g) => g.categories.includes(t.category))!.category;
 
@@ -25,6 +34,12 @@ interface Props {
  */
 export function TargetPicker({ value, onChange, assess, toolbar }: Props) {
   const [group, setGroup] = useState<GroupId>(groupOf(value));
+  // A target chosen elsewhere (e.g. the header search) opens its group.
+  const [shownFor, setShownFor] = useState(value.id);
+  if (shownFor !== value.id) {
+    setShownFor(value.id);
+    setGroup(groupOf(value));
+  }
   const [showAll, setShowAll] = useState(false);
 
   const assessed = useMemo(() => new Map(TARGETS.map((t) => [t.id, assess(t)])), [assess]);
@@ -43,7 +58,17 @@ export function TargetPicker({ value, onChange, assess, toolbar }: Props) {
           onChange={setGroup}
           items={TARGET_GROUPS.map((g) => {
             const n = TARGETS.filter((t) => groupOf(t) === g.category && (showAll || t.id === value.id || assessed.get(t.id)!.reach !== "out_of_reach")).length;
-            return { id: g.category, label: g.label, count: n };
+            const Icon = GROUP_ICON[g.category] ?? Icons.Star;
+            return {
+              id: g.category,
+              label: (
+                <span className="inline-flex items-center gap-1.5">
+                  <Icon className="size-4" />
+                  {g.label}
+                </span>
+              ),
+              count: n,
+            };
           })}
         />
         {toolbar}
@@ -60,10 +85,13 @@ export function TargetPicker({ value, onChange, assess, toolbar }: Props) {
               aria-pressed={selected}
               title={`${t.name}${t.designation ? ` (${t.designation})` : ""} · ${t.subtype}${a.reasons[0] ? `\n${a.reasons[0]}` : ""}`}
               onClick={() => onChange(t)}
-              className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm transition-colors ${
-                selected ? "border-accent bg-accent/15 text-foreground" : "border-border text-muted hover:text-foreground"
+              className={`inline-flex items-center gap-2 rounded-full border py-1 pl-1.5 pr-3.5 text-sm transition-colors ${
+                selected
+                  ? "border-accent bg-accent/15 text-foreground shadow-glow"
+                  : "border-border bg-surface-sunken/50 text-muted hover:border-border-strong hover:text-foreground"
               } ${a.reach === "out_of_reach" ? "opacity-60" : ""}`}
             >
+              <TargetGlyph target={t} size={22} />
               {a.reach !== "good" && (
                 <span aria-hidden className={`size-1.5 rounded-full ${a.reach === "challenging" ? "bg-warning" : "bg-danger"}`} />
               )}
@@ -76,7 +104,7 @@ export function TargetPicker({ value, onChange, assess, toolbar }: Props) {
       </div>
 
       {(hidden > 0 || showAll) && hiddenTotal > 0 && (
-        <p className="text-xs text-muted">
+        <p className="-mt-1.5 text-xs text-muted">
           {showAll ? "Showing every target, including ones this setup can't show." : `${hidden} ${hidden === 1 ? "target is" : "targets are"} hidden: out of reach for this setup.`}{" "}
           <button type="button" className="text-accent hover:underline" onClick={() => setShowAll((s) => !s)}>
             {showAll ? "Hide them" : "Show all"}

@@ -1,0 +1,389 @@
+{
+  "generatedBy": "scripts/fetch-lunar-data.mjs",
+  "sources": {
+    "svsMoonKit": {
+      "name": "NASA Scientific Visualization Studio — CGI Moon Kit",
+      "pageUrl": "https://svs.gsfc.nasa.gov/4720",
+      "credit": "NASA's Scientific Visualization Studio; LRO LROC WAC (NASA/GSFC/Arizona State University) and LOLA (NASA/GSFC)",
+      "license": "Public domain"
+    },
+    "lolaLdem118": {
+      "name": "USGS Astrogeology — Moon LRO LOLA Global LDEM 118 m (v1, March 2014)",
+      "pageUrl": "https://astrogeology.usgs.gov/search/map/moon_lro_lola_global_ldem_118m",
+      "credit": "NASA/GSFC LOLA Science Team; USGS Astrogeology Science Center",
+      "license": "Public domain"
+    },
+    "wac100m": {
+      "name": "USGS Astrogeology — Moon LRO LROC WAC Global Morphologic Mosaic 100 m (June 2013)",
+      "pageUrl": "https://astrogeology.usgs.gov/search/map/moon_lro_lroc_wac_global_morphology_mosaic_100m",
+      "credit": "NASA/GSFC/Arizona State University; USGS Astrogeology Science Center",
+      "license": "Public domain"
+    },
+    "gazetteer": {
+      "name": "IAU/USGS Gazetteer of Planetary Nomenclature",
+      "pageUrl": "https://planetarynames.wr.usgs.gov/Page/MOON/target",
+      "credit": "IAU Working Group for Planetary System Nomenclature; USGS Astrogeology Science Center",
+      "license": "Public domain"
+    }
+  },
+  "assets": {
+    "albedo-2k": {
+      "src": "/explorer/moon/albedo-2k.webp",
+      "kind": "observation-mosaic",
+      "widthPx": 2048,
+      "heightPx": 1024,
+      "bytes": 412362,
+      "projection": "equirectangular, longitude −180° (left) … +180° (right), latitude +90° (top) … −90° (bottom)",
+      "source": "svsMoonKit",
+      "sourceFile": "https://svs.gsfc.nasa.gov/vis/a000000/a004700/a004720/lroc_color_poles_2k.tif",
+      "processing": "Resized to 2048×1024 and encoded as WebP (quality 88).",
+      "notes": [
+        "LRO Wide Angle Camera mosaic taken with the Sun high over each area: it shows brightness (albedo), not the shadows seen near the terminator.",
+        "Polar gaps are filled from other LROC data in the source kit."
+      ],
+      "retrievedAt": "2026-11-21"
+    },
+    "albedo-4k": {
+      "src": "/explorer/moon/albedo-4k.webp",
+      "kind": "observation-mosaic",
+      "widthPx": 4096,
+      "heightPx": 2048,
+      "bytes": 1529318,
+      "projection": "equirectangular, longitude −180° (left) … +180° (right), latitude +90° (top) … −90° (bottom)",
+      "source": "svsMoonKit",
+      "sourceFile": "https://svs.gsfc.nasa.gov/vis/a000000/a004700/a004720/lroc_color_poles_4k.tif",
+      "processing": "Resized to 4096×2048 and encoded as WebP (quality 88).",
+      "notes": [
+        "LRO Wide Angle Camera mosaic taken with the Sun high over each area: it shows brightness (albedo), not the shadows seen near the terminator.",
+        "Polar gaps are filled from other LROC data in the source kit."
+      ],
+      "retrievedAt": "2026-11-21"
+    },
+    "elevation-global": {
+      "src": "/explorer/moon/elevation-4ppd.i16",
+      "kind": "elevation-model",
+      "format": "int16 little-endian, metres above the 1737.4 km reference sphere, row-major from the north-west corner",
+      "widthPx": 1440,
+      "heightPx": 720,
+      "minM": -8878,
+      "maxM": 10504,
+      "metresPerPx": 7581,
+      "projection": "equirectangular, longitude −180° … +180°, latitude +90° … −90°",
+      "source": "svsMoonKit",
+      "sourceFile": "https://svs.gsfc.nasa.gov/vis/a000000/a004700/a004720/ldem_4.tif",
+      "processing": "Float kilometres converted to whole metres (int16). No resampling.",
+      "notes": [
+        "LOLA laser altimetry gridded at 4 pixels per degree (about 7.6 km per pixel)."
+      ],
+      "retrievedAt": "2026-11-21"
+    },
+    "terrain-aristarchus-albedo": {
+      "src": "/explorer/moon/terrain/aristarchus.albedo.webp",
+      "kind": "observation-mosaic",
+      "featureId": "aristarchus",
+      "widthPx": 384,
+      "heightPx": 384,
+      "bytes": 32848,
+      "window": {
+        "centreLatDeg": 23.7299,
+        "centreLonDeg": -47.4901,
+        "sideKm": 140,
+        "samples": 384,
+        "kmPerSample": 0.3646
+      },
+      "source": "wac100m",
+      "sourceFile": "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Lunar_LRO_LROC-WAC_Mosaic_global_100m_June2013.tif",
+      "processing": "Read by HTTP range; bilinear resampling to the same 384×384 grid as the elevation crop.",
+      "notes": [
+        "Morphologic mosaic: images taken with the Sun at moderate angles, so relief shading is included."
+      ],
+      "retrievedAt": "2026-11-21"
+    },
+    "terrain-aristarchus-dem": {
+      "src": "/explorer/moon/terrain/aristarchus.dem.i16",
+      "kind": "elevation-model",
+      "featureId": "aristarchus",
+      "format": "int16 little-endian, metres above the 1737.4 km reference sphere, N×N row-major from the north-west corner",
+      "window": {
+        "centreLatDeg": 23.7299,
+        "centreLonDeg": -47.4901,
+        "sideKm": 140,
+        "samples": 384,
+        "kmPerSample": 0.3646
+      },
+      "minM": -3299,
+      "maxM": 1502,
+      "source": "lolaLdem118",
+      "sourceFile": "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Lunar_LRO_LOLA_Global_LDEM_118m_Mar2014.tif",
+      "processing": "Read 768 rows × 1319 columns by HTTP range; bilinear resampling to a 384×384 local grid (north up, 0.365 km per sample); raw values × 0.5 m.",
+      "notes": [
+        "Source grid is about 118 m per pixel; smaller details are not in the data."
+      ],
+      "retrievedAt": "2026-11-21"
+    },
+    "terrain-clavius-albedo": {
+      "src": "/explorer/moon/terrain/clavius.albedo.webp",
+      "kind": "observation-mosaic",
+      "featureId": "clavius",
+      "widthPx": 384,
+      "heightPx": 384,
+      "bytes": 71802,
+      "window": {
+        "centreLatDeg": -58.6228,
+        "centreLonDeg": -14.7275,
+        "sideKm": 369,
+        "samples": 384,
+        "kmPerSample": 0.9609
+      },
+      "source": "wac100m",
+      "sourceFile": "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Lunar_LRO_LROC-WAC_Mosaic_global_100m_June2013.tif",
+      "processing": "Read by HTTP range; bilinear resampling to the same 384×384 grid as the elevation crop.",
+      "notes": [
+        "Morphologic mosaic: images taken with the Sun at moderate angles, so relief shading is included."
+      ],
+      "retrievedAt": "2026-11-21"
+    },
+    "terrain-clavius-dem": {
+      "src": "/explorer/moon/terrain/clavius.dem.i16",
+      "kind": "elevation-model",
+      "featureId": "clavius",
+      "format": "int16 little-endian, metres above the 1737.4 km reference sphere, N×N row-major from the north-west corner",
+      "window": {
+        "centreLatDeg": -58.6228,
+        "centreLonDeg": -14.7275,
+        "sideKm": 369,
+        "samples": 384,
+        "kmPerSample": 0.9609
+      },
+      "minM": -6103,
+      "maxM": 2186,
+      "source": "lolaLdem118",
+      "sourceFile": "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Lunar_LRO_LOLA_Global_LDEM_118m_Mar2014.tif",
+      "processing": "Read 768 rows × 7291 columns by HTTP range; bilinear resampling to a 384×384 local grid (north up, 0.961 km per sample); raw values × 0.5 m.",
+      "notes": [
+        "Source grid is about 118 m per pixel; smaller details are not in the data."
+      ],
+      "retrievedAt": "2026-11-21"
+    },
+    "terrain-copernicus-albedo": {
+      "src": "/explorer/moon/terrain/copernicus.albedo.webp",
+      "kind": "observation-mosaic",
+      "featureId": "copernicus",
+      "widthPx": 384,
+      "heightPx": 384,
+      "bytes": 42842,
+      "window": {
+        "centreLatDeg": 9.6209,
+        "centreLonDeg": -20.0786,
+        "sideKm": 250,
+        "samples": 384,
+        "kmPerSample": 0.651
+      },
+      "source": "wac100m",
+      "sourceFile": "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Lunar_LRO_LROC-WAC_Mosaic_global_100m_June2013.tif",
+      "processing": "Read by HTTP range; bilinear resampling to the same 384×384 grid as the elevation crop.",
+      "notes": [
+        "Morphologic mosaic: images taken with the Sun at moderate angles, so relief shading is included."
+      ],
+      "retrievedAt": "2026-11-21"
+    },
+    "terrain-copernicus-dem": {
+      "src": "/explorer/moon/terrain/copernicus.dem.i16",
+      "kind": "elevation-model",
+      "featureId": "copernicus",
+      "format": "int16 little-endian, metres above the 1737.4 km reference sphere, N×N row-major from the north-west corner",
+      "window": {
+        "centreLatDeg": 9.6209,
+        "centreLonDeg": -20.0786,
+        "sideKm": 250,
+        "samples": 384,
+        "kmPerSample": 0.651
+      },
+      "minM": -3648,
+      "maxM": 780,
+      "source": "lolaLdem118",
+      "sourceFile": "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Lunar_LRO_LOLA_Global_LDEM_118m_Mar2014.tif",
+      "processing": "Read 768 rows × 2176 columns by HTTP range; bilinear resampling to a 384×384 local grid (north up, 0.651 km per sample); raw values × 0.5 m.",
+      "notes": [
+        "Source grid is about 118 m per pixel; smaller details are not in the data."
+      ],
+      "retrievedAt": "2026-11-21"
+    },
+    "terrain-kepler-albedo": {
+      "src": "/explorer/moon/terrain/kepler.albedo.webp",
+      "kind": "observation-mosaic",
+      "featureId": "kepler",
+      "widthPx": 384,
+      "heightPx": 384,
+      "bytes": 27156,
+      "window": {
+        "centreLatDeg": 8.121,
+        "centreLonDeg": -38.0087,
+        "sideKm": 103,
+        "samples": 384,
+        "kmPerSample": 0.2682
+      },
+      "source": "wac100m",
+      "sourceFile": "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Lunar_LRO_LROC-WAC_Mosaic_global_100m_June2013.tif",
+      "processing": "Read by HTTP range; bilinear resampling to the same 384×384 grid as the elevation crop.",
+      "notes": [
+        "Morphologic mosaic: images taken with the Sun at moderate angles, so relief shading is included."
+      ],
+      "retrievedAt": "2026-11-21"
+    },
+    "terrain-kepler-dem": {
+      "src": "/explorer/moon/terrain/kepler.dem.i16",
+      "kind": "elevation-model",
+      "featureId": "kepler",
+      "format": "int16 little-endian, metres above the 1737.4 km reference sphere, N×N row-major from the north-west corner",
+      "window": {
+        "centreLatDeg": 8.121,
+        "centreLonDeg": -38.0087,
+        "sideKm": 103,
+        "samples": 384,
+        "kmPerSample": 0.2682
+      },
+      "minM": -3071,
+      "maxM": 137,
+      "source": "lolaLdem118",
+      "sourceFile": "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Lunar_LRO_LOLA_Global_LDEM_118m_Mar2014.tif",
+      "processing": "Read 768 rows × 886 columns by HTTP range; bilinear resampling to a 384×384 local grid (north up, 0.268 km per sample); raw values × 0.5 m.",
+      "notes": [
+        "Source grid is about 118 m per pixel; smaller details are not in the data."
+      ],
+      "retrievedAt": "2026-11-21"
+    },
+    "terrain-plato-albedo": {
+      "src": "/explorer/moon/terrain/plato.albedo.webp",
+      "kind": "observation-mosaic",
+      "featureId": "plato",
+      "widthPx": 384,
+      "heightPx": 384,
+      "bytes": 49554,
+      "window": {
+        "centreLatDeg": 51.6192,
+        "centreLonDeg": -9.3825,
+        "sideKm": 242,
+        "samples": 384,
+        "kmPerSample": 0.6302
+      },
+      "source": "wac100m",
+      "sourceFile": "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Lunar_LRO_LROC-WAC_Mosaic_global_100m_June2013.tif",
+      "processing": "Read by HTTP range; bilinear resampling to the same 384×384 grid as the elevation crop.",
+      "notes": [
+        "Morphologic mosaic: images taken with the Sun at moderate angles, so relief shading is included."
+      ],
+      "retrievedAt": "2026-11-21"
+    },
+    "terrain-plato-dem": {
+      "src": "/explorer/moon/terrain/plato.dem.i16",
+      "kind": "elevation-model",
+      "featureId": "plato",
+      "format": "int16 little-endian, metres above the 1737.4 km reference sphere, N×N row-major from the north-west corner",
+      "window": {
+        "centreLatDeg": 51.6192,
+        "centreLonDeg": -9.3825,
+        "sideKm": 242,
+        "samples": 384,
+        "kmPerSample": 0.6302
+      },
+      "minM": -4530,
+      "maxM": 884,
+      "source": "lolaLdem118",
+      "sourceFile": "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Lunar_LRO_LOLA_Global_LDEM_118m_Mar2014.tif",
+      "processing": "Read 768 rows × 3620 columns by HTTP range; bilinear resampling to a 384×384 local grid (north up, 0.63 km per sample); raw values × 0.5 m.",
+      "notes": [
+        "Source grid is about 118 m per pixel; smaller details are not in the data."
+      ],
+      "retrievedAt": "2026-11-21"
+    },
+    "terrain-theophilus-albedo": {
+      "src": "/explorer/moon/terrain/theophilus.albedo.webp",
+      "kind": "observation-mosaic",
+      "featureId": "theophilus",
+      "widthPx": 384,
+      "heightPx": 384,
+      "bytes": 50760,
+      "window": {
+        "centreLatDeg": -11.4524,
+        "centreLonDeg": 26.2847,
+        "sideKm": 217,
+        "samples": 384,
+        "kmPerSample": 0.5651
+      },
+      "source": "wac100m",
+      "sourceFile": "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Lunar_LRO_LROC-WAC_Mosaic_global_100m_June2013.tif",
+      "processing": "Read by HTTP range; bilinear resampling to the same 384×384 grid as the elevation crop.",
+      "notes": [
+        "Morphologic mosaic: images taken with the Sun at moderate angles, so relief shading is included."
+      ],
+      "retrievedAt": "2026-11-21"
+    },
+    "terrain-theophilus-dem": {
+      "src": "/explorer/moon/terrain/theophilus.dem.i16",
+      "kind": "elevation-model",
+      "featureId": "theophilus",
+      "format": "int16 little-endian, metres above the 1737.4 km reference sphere, N×N row-major from the north-west corner",
+      "window": {
+        "centreLatDeg": -11.4524,
+        "centreLonDeg": 26.2847,
+        "sideKm": 217,
+        "samples": 384,
+        "kmPerSample": 0.5651
+      },
+      "minM": -4869,
+      "maxM": 3209,
+      "source": "lolaLdem118",
+      "sourceFile": "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Lunar_LRO_LOLA_Global_LDEM_118m_Mar2014.tif",
+      "processing": "Read 768 rows × 1901 columns by HTTP range; bilinear resampling to a 384×384 local grid (north up, 0.565 km per sample); raw values × 0.5 m.",
+      "notes": [
+        "Source grid is about 118 m per pixel; smaller details are not in the data."
+      ],
+      "retrievedAt": "2026-11-21"
+    },
+    "terrain-tycho-albedo": {
+      "src": "/explorer/moon/terrain/tycho.albedo.webp",
+      "kind": "observation-mosaic",
+      "featureId": "tycho",
+      "widthPx": 384,
+      "heightPx": 384,
+      "bytes": 67522,
+      "window": {
+        "centreLatDeg": -43.2958,
+        "centreLonDeg": -11.2153,
+        "sideKm": 273,
+        "samples": 384,
+        "kmPerSample": 0.7109
+      },
+      "source": "wac100m",
+      "sourceFile": "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Lunar_LRO_LROC-WAC_Mosaic_global_100m_June2013.tif",
+      "processing": "Read by HTTP range; bilinear resampling to the same 384×384 grid as the elevation crop.",
+      "notes": [
+        "Morphologic mosaic: images taken with the Sun at moderate angles, so relief shading is included."
+      ],
+      "retrievedAt": "2026-11-21"
+    },
+    "terrain-tycho-dem": {
+      "src": "/explorer/moon/terrain/tycho.dem.i16",
+      "kind": "elevation-model",
+      "featureId": "tycho",
+      "format": "int16 little-endian, metres above the 1737.4 km reference sphere, N×N row-major from the north-west corner",
+      "window": {
+        "centreLatDeg": -43.2958,
+        "centreLonDeg": -11.2153,
+        "sideKm": 273,
+        "samples": 384,
+        "kmPerSample": 0.7109
+      },
+      "minM": -3527,
+      "maxM": 2091,
+      "source": "lolaLdem118",
+      "sourceFile": "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Lunar_LRO_LOLA_Global_LDEM_118m_Mar2014.tif",
+      "processing": "Read 768 rows × 3434 columns by HTTP range; bilinear resampling to a 384×384 local grid (north up, 0.711 km per sample); raw values × 0.5 m.",
+      "notes": [
+        "Source grid is about 118 m per pixel; smaller details are not in the data."
+      ],
+      "retrievedAt": "2026-11-21"
+    }
+  }
+}

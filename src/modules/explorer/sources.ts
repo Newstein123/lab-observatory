@@ -1,0 +1,186 @@
+import type { Source } from "./types";
+
+/** Citation registry for the explorer's data, text and imagery. */
+export const SOURCES = {
+  gazetteer: {
+    id: "gazetteer",
+    name: "IAU/USGS Gazetteer of Planetary Nomenclature",
+    url: "https://planetarynames.wr.usgs.gov/Page/MOON/target",
+    credit: "IAU Working Group for Planetary System Nomenclature; USGS Astrogeology Science Center",
+    license: "Public domain",
+  },
+  svsMoonKit: {
+    id: "svsMoonKit",
+    name: "NASA SVS — CGI Moon Kit",
+    url: "https://svs.gsfc.nasa.gov/4720",
+    credit: "NASA's Scientific Visualization Studio; LRO LROC WAC (NASA/GSFC/Arizona State University) and LOLA (NASA/GSFC)",
+    license: "Public domain",
+  },
+  lolaLdem118: {
+    id: "lolaLdem118",
+    name: "USGS — Moon LRO LOLA Global LDEM 118 m",
+    url: "https://astrogeology.usgs.gov/search/map/moon_lro_lola_global_ldem_118m",
+    credit: "NASA/GSFC LOLA Science Team; USGS Astrogeology Science Center",
+    license: "Public domain",
+  },
+  wac100m: {
+    id: "wac100m",
+    name: "USGS — Moon LRO LROC WAC Global Morphologic Mosaic 100 m",
+    url: "https://astrogeology.usgs.gov/search/map/moon_lro_lroc_wac_global_morphology_mosaic_100m",
+    credit: "NASA/GSFC/Arizona State University; USGS Astrogeology Science Center",
+    license: "Public domain",
+  },
+  nasaMoonFacts: {
+    id: "nasaMoonFacts",
+    name: "NASA Moon Fact Sheet (NSSDCA)",
+    url: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html",
+    credit: "NASA Space Science Data Coordinated Archive",
+    license: "Public domain",
+  },
+  nasaMoon: {
+    id: "nasaMoon",
+    name: "NASA Science — Earth's Moon",
+    url: "https://science.nasa.gov/moon/",
+    credit: "NASA",
+    license: "Public domain",
+  },
+  wilhelms1987: {
+    id: "wilhelms1987",
+    name: "Wilhelms (1987), The Geologic History of the Moon, USGS Professional Paper 1348",
+    url: "https://pubs.usgs.gov/publication/pp1348",
+    credit: "Don E. Wilhelms, U.S. Geological Survey",
+    license: "Public domain",
+  },
+  apollo: {
+    id: "apollo",
+    name: "NASA — Apollo program missions",
+    url: "https://www.nasa.gov/the-apollo-program/",
+    credit: "NASA",
+    license: "Public domain",
+  },
+  lroc: {
+    id: "lroc",
+    name: "Lunar Reconnaissance Orbiter Camera (LROC)",
+    url: "https://lroc.asu.edu/",
+    credit: "NASA/GSFC/Arizona State University",
+    license: "Public domain",
+  },
+  sofiaClavius: {
+    id: "sofiaClavius",
+    name: "NASA — SOFIA discovers water on the sunlit surface of the Moon (2020)",
+    url: "https://www.nasa.gov/news-release/nasas-sofia-discovers-water-on-sunlit-surface-of-moon/",
+    credit: "NASA",
+    license: "Public domain",
+  },
+  nasaJupiter: {
+    id: "nasaJupiter",
+    name: "NASA Science — Jupiter and its moons",
+    url: "https://science.nasa.gov/jupiter/",
+    credit: "NASA",
+    license: "Public domain",
+  },
+  nasaJupiterFacts: {
+    id: "nasaJupiterFacts",
+    name: "NASA Jupiter Fact Sheet and Jovian Satellite Fact Sheet (NSSDCA)",
+    url: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/joviansatfact.html",
+    credit: "NASA Space Science Data Coordinated Archive",
+    license: "Public domain",
+  },
+  meeus: {
+    id: "meeus",
+    name: "Meeus, Astronomical Algorithms, 2nd ed. (1998)",
+    url: "https://www.willbell.com/math/mc1.htm",
+    credit: "Jean Meeus; positions and orientation computed by this app",
+    license: "Method reference",
+  },
+  nasaSaturn: {
+    id: "nasaSaturn",
+    name: "NASA Science — Saturn, its rings and moons",
+    url: "https://science.nasa.gov/saturn/",
+    credit: "NASA",
+    license: "Public domain",
+  },
+  nasaSaturnFacts: {
+    id: "nasaSaturnFacts",
+    name: "NASA Saturn Fact Sheet (NSSDCA)",
+    url: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/saturnfact.html",
+    credit: "NASA Space Science Data Coordinated Archive",
+    license: "Public domain",
+  },
+  nasaRingFacts: {
+    id: "nasaRingFacts",
+    name: "NASA Saturnian Rings Fact Sheet (NSSDCA)",
+    url: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/satringfact.html",
+    credit: "NASA Space Science Data Coordinated Archive",
+    license: "Public domain",
+  },
+  horizons: {
+    id: "horizons",
+    name: "JPL Horizons — satellite ephemerides and physical data",
+    url: "https://ssd.jpl.nasa.gov/horizons/",
+    credit: "NASA/JPL Solar System Dynamics",
+    license: "Public domain",
+  },
+  skyTelGrs: {
+    id: "skyTelGrs",
+    name: "Sky & Telescope — Transit Times of Jupiter's Great Red Spot",
+    url: "https://skyandtelescope.org/stargazing-and-observing/interactive-stargazing-tools/transit-times-of-jupiters-great-red-spot/",
+    credit: "Sky & Telescope (longitude model from JUPOS trends)",
+    license: "Cited reference",
+  },
+  simon2018: {
+    id: "simon2018",
+    name: "Simon et al. (2018), Historical and Contemporary Trends in the Size, Drift, and Color of Jupiter's Great Red Spot, AJ 155, 151",
+    url: "https://iopscience.iop.org/article/10.3847/1538-3881/aaae01",
+    credit: "A. A. Simon et al., NASA GSFC",
+    license: "Cited reference",
+  },
+  rogers1995: {
+    id: "rogers1995",
+    name: "Rogers (1995), The Giant Planet Jupiter, Cambridge University Press",
+    url: "https://search.worldcat.org/search?q=bn:0521410088",
+    credit: "John H. Rogers",
+    license: "Cited reference",
+  },
+  pia07782: {
+    id: "pia07782",
+    name: "NASA Photojournal PIA07782 — Cassini's Best Maps of Jupiter",
+    url: "https://photojournal.jpl.nasa.gov/catalog/PIA07782",
+    credit: "NASA/JPL/Space Science Institute",
+    license: "Public domain",
+  },
+  simbad: {
+    id: "simbad",
+    name: "SIMBAD astronomical database",
+    url: "https://simbad.cds.unistra.fr/simbad/",
+    credit: "CDS, Strasbourg Astronomical Observatory, France",
+    license: "Free use with acknowledgement",
+  },
+  hubbleMessier: {
+    id: "hubbleMessier",
+    name: "NASA — Hubble's Messier Catalog",
+    url: "https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/",
+    credit: "NASA",
+    license: "Public domain",
+  },
+  skyview: {
+    id: "skyview",
+    name: "NASA SkyView — Digitized Sky Survey cutouts",
+    url: "https://skyview.gsfc.nasa.gov/",
+    credit: "NASA GSFC SkyView; DSS: STScI / Palomar / UK Schmidt",
+    license: "Free use with acknowledgement",
+  },
+  catalogue: {
+    id: "catalogue",
+    name: "Universal Observatory target catalogue",
+    url: "/lab/simulate",
+    credit: "Values from the app's curated catalogue (SIMBAD / JPL Horizons verified)",
+    license: "—",
+  },
+} as const satisfies Record<string, Source>;
+
+export type SourceId = keyof typeof SOURCES;
+
+export function getSource(id: string): Source | undefined {
+  return (SOURCES as Record<string, Source>)[id];
+}

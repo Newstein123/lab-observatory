@@ -1,0 +1,150 @@
+{
+ "source": "JPL Horizons astrometric RA/Dec (geocentric), moon minus Saturn",
+ "retrievedAt": "2026-11-21",
+ "checks": [
+  {
+   "moon": "mimas",
+   "utc": "2026-11-21T14:00:00Z",
+   "eastArcsec": -28.79,
+   "northArcsec": 3.03
+  },
+  {
+   "moon": "mimas",
+   "utc": "2027-08-15T03:00:00Z",
+   "eastArcsec": 0.94,
+   "northArcsec": 6.37
+  },
+  {
+   "moon": "mimas",
+   "utc": "2029-03-02T20:00:00Z",
+   "eastArcsec": -26.8,
+   "northArcsec": 0.05
+  },
+  {
+   "moon": "enceladus",
+   "utc": "2026-11-21T14:00:00Z",
+   "eastArcsec": 31.29,
+   "northArcsec": 0.35
+  },
+  {
+   "moon": "enceladus",
+   "utc": "2027-08-15T03:00:00Z",
+   "eastArcsec": -34.05,
+   "northArcsec": -2.75
+  },
+  {
+   "moon": "enceladus",
+   "utc": "2029-03-02T20:00:00Z",
+   "eastArcsec": -26.9,
+   "northArcsec": 6.53
+  },
+  {
+   "moon": "tethys",
+   "utc": "2026-11-21T14:00:00Z",
+   "eastArcsec": 45.91,
+   "northArcsec": -3.71
+  },
+  {
+   "moon": "tethys",
+   "utc": "2027-08-15T03:00:00Z",
+   "eastArcsec": 32.97,
+   "northArcsec": 6.53
+  },
+  {
+   "moon": "tethys",
+   "utc": "2029-03-02T20:00:00Z",
+   "eastArcsec": 2.6,
+   "northArcsec": -13.5
+  },
+  {
+   "moon": "dione",
+   "utc": "2026-11-21T14:00:00Z",
+   "eastArcsec": 54.81,
+   "northArcsec": -5.65
+  },
+  {
+   "moon": "dione",
+   "utc": "2027-08-15T03:00:00Z",
+   "eastArcsec": -9.83,
+   "northArcsec": 14.61
+  },
+  {
+   "moon": "dione",
+   "utc": "2029-03-02T20:00:00Z",
+   "eastArcsec": 50.29,
+   "northArcsec": -6.13
+  },
+  {
+   "moon": "rhea",
+   "utc": "2026-11-21T14:00:00Z",
+   "eastArcsec": 10.24,
+   "northArcsec": 8.04
+  },
+  {
+   "moon": "rhea",
+   "utc": "2027-08-15T03:00:00Z",
+   "eastArcsec": 34.01,
+   "northArcsec": 17.47
+  },
+  {
+   "moon": "rhea",
+   "utc": "2029-03-02T20:00:00Z",
+   "eastArcsec": -55.19,
+   "northArcsec": 16.56
+  },
+  {
+   "moon": "titan",
+   "utc": "2026-11-21T14:00:00Z",
+   "eastArcsec": 190.61,
+   "northArcsec": -5.76
+  },
+  {
+   "moon": "titan",
+   "utc": "2027-08-15T03:00:00Z",
+   "eastArcsec": -64.59,
+   "northArcsec": -41.55
+  },
+  {
+   "moon": "titan",
+   "utc": "2029-03-02T20:00:00Z",
+   "eastArcsec": 111.38,
+   "northArcsec": 42.62
+  },
+  {
+   "moon": "hyperion",
+   "utc": "2026-11-21T14:00:00Z",
+   "eastArcsec": -213.42,
+   "northArcsec": 11.92
+  },
+  {
+   "moon": "hyperion",
+   "utc": "2027-08-15T03:00:00Z",
+   "eastArcsec": 222.26,
+   "northArcsec": -24.03
+  },
+  {
+   "moon": "hyperion",
+   "utc": "2029-03-02T20:00:00Z",
+   "eastArcsec": -215.67,
+   "northArcsec": -11.5
+  },
+  {
+   "moon": "iapetus",
+   "utc": "2026-11-21T14:00:00Z",
+   "eastArcsec": 344.51,
+   "northArcsec": 152.2
+  },
+  {
+   "moon": "iapetus",
+   "utc": "2027-08-15T03:00:00Z",
+   "eastArcsec": -498.18,
+   "northArcsec": -73.09
+  },
+  {
+   "moon": "iapetus",
+   "utc": "2029-03-02T20:00:00Z",
+   "eastArcsec": -459.48,
+   "northArcsec": -154.33
+  }
+ ]
+}

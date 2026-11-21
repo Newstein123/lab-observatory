@@ -23,6 +23,7 @@ import {
   type ObservationProjectInput,
 } from "@/modules/projects/models";
 import { simulationSessionSchema, type NewSession, type SimulationSession } from "@/modules/sessions/models";
+import { discoveryInputSchema, discoveryKey, discoveryNoteSchema, discoverySchema, type Discovery, type DiscoveryInput } from "@/modules/discoveries/models";
 import { NotFoundError, ValidationError, type ObservatoryRepository } from "./repository";
 
 /**
@@ -44,6 +45,7 @@ export class AuthRequiredError extends Error {
 type Client = SupabaseClient<Database>;
 type ProfileRow = Tables<"telescope_profiles">;
 type AccessoryRow = Tables<"accessories">;
+type DiscoveryRow = Tables<"discoveries">;
 type ProjectRow = Tables<"observation_projects"> & {
   project_sessions: Pick<Tables<"project_sessions">, "session_id" | "added_at">[];
 };
@@ -202,6 +204,37 @@ function projectFromRow(r: ProjectRow): ObservationProject | undefined {
   });
   if (!parsed.success) return warnInvalid("project", r.id), undefined;
   return parsed.data;
+}
+
+function discoveryFromRow(r: DiscoveryRow): Discovery | undefined {
+  const parsed = discoverySchema.safeParse({
+    id: r.id,
+    targetId: r.target_id,
+    kind: r.kind,
+    ...(r.feature_id ? { featureId: r.feature_id } : {}),
+    name: r.name,
+    ...(r.note ? { note: r.note } : {}),
+    ...(r.observed_at ? { observedAt: new Date(r.observed_at).toISOString() } : {}),
+    ...(r.site_name ? { siteName: r.site_name } : {}),
+    ...(r.setup_summary ? { setupSummary: r.setup_summary } : {}),
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+  });
+  if (!parsed.success) return warnInvalid("discovery", r.id), undefined;
+  return parsed.data as Discovery;
+}
+
+function discoveryColumns(input: DiscoveryInput) {
+  return {
+    target_id: input.targetId,
+    kind: input.kind,
+    feature_id: input.featureId ?? null,
+    name: input.name,
+    note: input.note ?? null,
+    observed_at: input.observedAt ?? null,
+    site_name: input.siteName ?? null,
+    setup_summary: input.setupSummary ?? null,
+  };
 }
 
 const defined = <T>(v: T | undefined): v is T => v !== undefined;
@@ -458,6 +491,45 @@ export function createSupabaseRepository(client: Client): ObservatoryRepository 
       if (!UUID.test(sessionId)) return;
       const { error } = await client.from("project_sessions").delete().eq("project_id", projectId).eq("session_id", sessionId);
       if (error) fail(error);
+      notify();
+    },
+
+    async listDiscoveries() {
+      const { data, error } = await client.from("discoveries").select("*").order("created_at", { ascending: false });
+      if (error) fail(error);
+      return data.map(discoveryFromRow).filter(defined);
+    },
+    async createDiscovery(input) {
+      const data = validate(discoveryInputSchema, input) as DiscoveryInput;
+      // One per thing: return the existing record when it was saved before.
+      let q = client.from("discoveries").select("*").eq("target_id", data.targetId).eq("kind", data.kind);
+      q = data.featureId ? q.eq("feature_id", data.featureId) : q.is("feature_id", null);
+      const { data: existing, error: lookupError } = await q.maybeSingle();
+      if (lookupError) fail(lookupError);
+      if (existing) return discoveryFromRow(existing)!;
+      const { data: row, error } = await client.from("discoveries").insert(discoveryColumns(data)).select("*").single();
+      if (error) {
+        // A concurrent save of the same thing: read the winner.
+        if (error.code === "23505") return (await this.listDiscoveries()).find((d) => discoveryKey(d) === discoveryKey(data))!;
+        fail(error);
+      }
+      notify();
+      return discoveryFromRow(row)!;
+    },
+    async updateDiscoveryNote(id, note) {
+      const text = note ? validate(discoveryNoteSchema, note) : "";
+      if (!UUID.test(id)) throw new NotFoundError("Discovery", id);
+      const { data: row, error } = await client.from("discoveries").update({ note: text || null }).eq("id", id).select("*").maybeSingle();
+      if (error) fail(error);
+      if (!row) throw new NotFoundError("Discovery", id);
+      notify();
+      return discoveryFromRow(row)!;
+    },
+    async deleteDiscovery(id) {
+      if (!UUID.test(id)) throw new NotFoundError("Discovery", id);
+      const { data, error } = await client.from("discoveries").delete().eq("id", id).select("id");
+      if (error) fail(error);
+      if (data.length === 0) throw new NotFoundError("Discovery", id);
       notify();
     },
 

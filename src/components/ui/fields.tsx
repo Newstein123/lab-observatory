@@ -133,17 +133,23 @@ export function Panel({
   title,
   children,
   actions,
+  icon,
   className = "",
 }: {
   title: string;
   children: React.ReactNode;
   actions?: React.ReactNode;
+  /** A small decorative icon before the title. */
+  icon?: React.ReactNode;
   className?: string;
 }) {
   return (
-    <section className={`glass rounded-xl p-4 ${className}`}>
+    <section className={`glass rounded-2xl p-4 ${className}`}>
       <div className="mb-3 flex items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold tracking-tight">{title}</h2>
+        <h2 className="flex items-center gap-2 text-[15px] font-semibold tracking-tight">
+          {icon && <span className="text-accent [&>svg]:size-[18px]">{icon}</span>}
+          {title}
+        </h2>
         {actions}
       </div>
       {children}

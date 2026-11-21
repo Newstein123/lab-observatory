@@ -127,9 +127,13 @@ export function MountModel({ spec, optics, pose: poseIn, ota, poleGuide }: Mount
   const s = mountScale(spec.payloadKg);
 
   if (spec.type === "dobsonian") {
-    const sideH = R + 140;
+    // Like a real rocker box, tall enough that the back of the tube (with the
+    // focuser and whatever is in it) clears the ground board at any altitude,
+    // even pointing straight up: the pivot sits at least that reach above it.
+    const rearReach = d ? d.pivot + (d.style === "newtonian" ? 40 : 170) : 0;
+    const sideH = Math.max(R + 140, Math.hypot(rearReach, R) + 40);
     const width = 2 * R + 90;
-    const pivotY = 30 + sideH - 30;
+    const pivotY = sideH;
     return (
       <group>
         <Part id="dob-base">
