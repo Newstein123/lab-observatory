@@ -8,6 +8,8 @@ import {
   limitingMagnitude,
   magnification,
   maxUsefulMagnification,
+  skyBackgroundAtEye,
+  skyLimitedMagnitude,
   surfaceBrightnessVsEye,
   trueFovFromApparent,
   trueFovFromFieldStop,
@@ -82,6 +84,37 @@ export function simulate(rawInput: SimulationInput): SimulationResult {
   if (barlow) assumptions.add("barlow_ideal_multiplier");
   const efl = effectiveFocalLength(optics.focalLengthMm, barlowFactor);
   const dawes = dawesLimit(optics.apertureMm);
+  // Seeing along the line of sight: worse through more air.
+  const seeing =
+    conditions.seeingArcsec !== undefined && conditions.airmass !== undefined
+      ? conditions.seeingArcsec * conditions.airmass ** 0.6
+      : conditions.seeingArcsec;
+  const skyGiven =
+    conditions.skyBrightnessMagArcsec2 !== undefined || conditions.extinctionMag !== undefined || conditions.cloudTransmission !== undefined;
+
+  /** Limiting magnitude for an exit pupil, under this sky. */
+  const limitFor = (pupilMm: number): Metric => {
+    if (!skyGiven) {
+      return estimated(limitingMagnitude(optics.apertureMm), "mag", "2 + 5·log₁₀(D mm)", ["limiting_magnitude_rule"]);
+    }
+    const sky = conditions.skyBrightnessMagArcsec2;
+    let v = sky !== undefined ? skyLimitedMagnitude(optics.apertureMm, sky, pupilMm) : limitingMagnitude(optics.apertureMm);
+    v -= conditions.extinctionMag ?? 0;
+    if (conditions.cloudTransmission !== undefined) v += 2.5 * Math.log10(Math.max(conditions.cloudTransmission, 0.01));
+    const used: AssumptionId[] = ["limiting_magnitude_rule"];
+    const terms = ["2 + 5·log₁₀(D)"];
+    if (sky !== undefined) {
+      used.push("sky_limited_magnitude");
+      terms.push("sky penalty");
+    }
+    if (conditions.extinctionMag !== undefined) {
+      used.push("extinction_airmass");
+      terms.push("extinction");
+    }
+    if (conditions.cloudTransmission !== undefined) used.push("cloud_transmission");
+    const formula = terms.join(" − ") + (conditions.cloudTransmission !== undefined ? " + 2.5·log₁₀(cloud)" : "");
+    return estimated(v, "mag", formula, used);
+  };
 
   const common: CommonMetrics = {
     effectiveFocalLength: calculated(
@@ -101,13 +134,53 @@ export function simulate(rawInput: SimulationInput): SimulationResult {
       `(D / ${EYE_PUPIL_MM} mm)²`,
       ["eye_pupil_7mm"],
     ),
-    limitingMagnitude: estimated(limitingMagnitude(optics.apertureMm), "mag", "2 + 5·log₁₀(D mm)", [
-      "limiting_magnitude_rule",
-    ]),
+    limitingMagnitude: limitFor(EYE_PUPIL_MM),
   };
   assumptions.add("dawes_point_source");
   assumptions.add("eye_pupil_7mm");
-  assumptions.add("limiting_magnitude_rule");
+  for (const a of common.limitingMagnitude.assumptions ?? []) assumptions.add(a);
+
+  // --- Atmosphere ---
+  if (conditions.airmass !== undefined) {
+    common.airmass = calculated(conditions.airmass, "", "Kasten & Young (1989)");
+    if (seeing !== undefined) {
+      common.effectiveSeeing = estimated(seeing, "arcsec", "seeing × air mass^0.6", ["seeing_airmass"]);
+      assumptions.add("seeing_airmass");
+    }
+  }
+  if (conditions.extinctionMag !== undefined) {
+    common.extinction = estimated(conditions.extinctionMag, "mag", "k × air mass", ["extinction_airmass"]);
+    assumptions.add("extinction_airmass");
+  }
+  if (conditions.skyBrightnessMagArcsec2 !== undefined) {
+    common.skyBrightness = estimated(conditions.skyBrightnessMagArcsec2, "mag/arcsec²", "light pollution + airglow + moonlight + twilight", [
+      "sky_brightness_estimated",
+    ]);
+    assumptions.add("sky_brightness_estimated");
+    if (conditions.skyBrightnessMagArcsec2 < 19.5) {
+      warnings.push({
+        code: "bright_sky",
+        message: `Bright sky (${conditions.skyBrightnessMagArcsec2.toFixed(1)} mag/arcsec²): faint nebulae and galaxies lose contrast or vanish.`,
+      });
+    }
+  }
+  if (conditions.cloudTransmission !== undefined) {
+    common.cloudTransmission = estimated(conditions.cloudTransmission, "", "1 − 0.95 × cloud cover", ["cloud_transmission"]);
+    assumptions.add("cloud_transmission");
+    if (conditions.cloudTransmission < 0.5) {
+      warnings.push({ code: "cloudy", message: "Cloud blocks much of the light; expect gaps and fading." });
+    }
+  }
+  if (conditions.targetAltitudeDeg !== undefined) {
+    if (conditions.targetAltitudeDeg < 0) {
+      warnings.push({ code: "below_horizon", message: "The target is below the horizon at this time and place." });
+    } else if (conditions.targetAltitudeDeg < 20) {
+      warnings.push({
+        code: "low_altitude",
+        message: `Only ${conditions.targetAltitudeDeg.toFixed(0)}° above the horizon: looking through thick air blurs and dims the view.`,
+      });
+    }
+  }
 
   if (input.filter?.kind && input.filter.kind !== "other") {
     common.filterTransmission = estimated(
@@ -119,18 +192,18 @@ export function simulate(rawInput: SimulationInput): SimulationResult {
     assumptions.add("filter_transmission_typical");
   }
 
-  if (conditions.seeingArcsec !== undefined) {
+  if (seeing !== undefined) {
     common.effectiveResolution = estimated(
-      effectiveResolution(dawes, conditions.seeingArcsec),
+      effectiveResolution(dawes, seeing),
       "arcsec",
       "max(Dawes limit, seeing)",
       ["seeing_dominates_when_larger", "dawes_point_source"],
     );
     assumptions.add("seeing_dominates_when_larger");
-    if (conditions.seeingArcsec > dawes) {
+    if (seeing > dawes) {
       warnings.push({
         code: "seeing_limited",
-        message: `Seeing (${conditions.seeingArcsec.toFixed(1)}″) is worse than the optical limit (${dawes.toFixed(2)}″); the atmosphere limits detail.`,
+        message: `Seeing (${seeing.toFixed(1)}″) is worse than the optical limit (${dawes.toFixed(2)}″); the atmosphere limits detail.`,
       });
     }
   }
@@ -198,7 +271,17 @@ export function simulate(rawInput: SimulationInput): SimulationResult {
         `min(1, (P / ${EYE_PUPIL_MM} mm)²)`,
         ["eye_pupil_7mm"],
       ),
+      // A smaller exit pupil darkens the sky background, so stars show better.
+      limitingMagnitude: limitFor(pupil),
     };
+    if (conditions.skyBrightnessMagArcsec2 !== undefined) {
+      metrics.skyBackgroundAtEye = estimated(
+        skyBackgroundAtEye(conditions.skyBrightnessMagArcsec2, pupil),
+        "mag/arcsec²",
+        `sky − 2.5·log₁₀(min(1, (P / ${EYE_PUPIL_MM} mm)²))`,
+        ["sky_brightness_estimated", "eye_pupil_7mm"],
+      );
+    }
 
     const fieldDiameterArcsec = trueFov.value * ARCSEC_PER_DEGREE;
     const framing: Framing = {
@@ -225,8 +308,8 @@ export function simulate(rawInput: SimulationInput): SimulationResult {
     sensorFovHeight: calculated(fovH / 60, "arcmin", "2·atan(h / 2F_eff)"),
   };
 
-  if (conditions.seeingArcsec !== undefined) {
-    const ratio = samplingRatio(conditions.seeingArcsec, scale);
+  if (seeing !== undefined) {
+    const ratio = samplingRatio(seeing, scale);
     metrics.samplingRatio = calculated(ratio, "px/FWHM", "seeing / image scale");
     const cls = classifySampling(ratio);
     if (cls === "undersampled") {

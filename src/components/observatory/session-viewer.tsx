@@ -1,5 +1,7 @@
 "use client";
 
+import { sessionAtmosphere, sessionPhase } from "@/modules/sessions/view";
+import { formatDateTime as formatZoned, zoneLabel } from "@/lib/time-zone";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo } from "react";
@@ -65,6 +67,8 @@ function SessionDetail({ session, projects }: { session: SimulationSession; proj
       gain: session.exposure?.gain ?? 1,
       exposureS: session.exposure?.exposureS ?? 0,
       filterKind: session.configurationSnapshot.filter?.kind,
+      atmosphere: sessionAtmosphere(session),
+      phase: sessionPhase(session),
     }),
     [session],
   );
@@ -117,9 +121,40 @@ function SessionDetail({ session, projects }: { session: SimulationSession; proj
           <SnapshotPanel config={config} session={session} />
           <Panel title="Conditions">
             <dl className="space-y-1.5 text-sm">
+              {session.view.site && (
+                <Row label="Place">
+                  {session.view.site.name} ({session.view.site.latDeg.toFixed(1)}°, {session.view.site.lonDeg.toFixed(1)}°)
+                </Row>
+              )}
+              {session.view.observedAt && (
+                <Row label="Time">
+                  {session.view.site?.timeZone
+                    ? `${formatZoned(new Date(session.view.observedAt), session.view.site.timeZone)} (${zoneLabel(new Date(session.view.observedAt), session.view.site.timeZone)})`
+                    : new Date(session.view.observedAt).toLocaleString()}
+                </Row>
+              )}
+              {session.view.conditionsSource && (
+                <Row label="Conditions">
+                  {session.view.conditionsSource === "ideal" ? "Ideal (best case)" : session.view.conditionsSource === "live" ? "Live forecast (Open-Meteo)" : "Set by hand"}
+                </Row>
+              )}
+              {session.conditions.skyBrightnessMagArcsec2 !== undefined && (
+                <Row label="Sky">
+                  {formatNumber(session.conditions.skyBrightnessMagArcsec2, 1)} mag/″²{session.view.skySource ? `, mostly ${session.view.skySource}` : ""}
+                </Row>
+              )}
+              {session.conditions.targetAltitudeDeg !== undefined && (
+                <Row label="Altitude">
+                  {session.conditions.targetAltitudeDeg < 0
+                    ? "Below the horizon"
+                    : `${formatNumber(session.conditions.targetAltitudeDeg, 0)}°${session.conditions.airmass ? ` · air mass ${formatNumber(session.conditions.airmass, 2)}` : ""}`}
+                </Row>
+              )}
+              {session.conditions.extinctionMag !== undefined && <Row label="Dimming">{formatNumber(session.conditions.extinctionMag, 2)} mag</Row>}
+              {session.view.cloud !== undefined && <Row label="Cloud">{Math.round(session.view.cloud * 100)}%</Row>}
               <Row label="Seeing">
                 {session.conditions.seeingArcsec !== undefined
-                  ? `${formatNumber(session.conditions.seeingArcsec, 1)}″ FWHM`
+                  ? `${formatNumber(session.conditions.seeingArcsec, 1)}″ FWHM${session.conditions.airmass ? " at the zenith" : ""}`
                   : "Not included"}
               </Row>
               {session.exposure && (

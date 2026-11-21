@@ -6,6 +6,8 @@ import { drawSatellites, type SatelliteMark } from "./satellite-drawing";
 import { drawStars, visibleStars, type Star, type StarFieldData } from "./stars";
 import type { Satellite } from "@/modules/targets/satellites";
 import { drawTarget, type LoadedReference } from "./target-drawing";
+import { atmosphericDimming, deepSkyVisibility, horizonTint, skyColour, skyLevel, type ViewAtmosphere, type ViewPhase } from "./atmosphere";
+import { drawClouds } from "./clouds";
 
 export interface DrawEyepieceOptions {
   target: CuratedTarget;
@@ -27,6 +29,14 @@ export interface DrawEyepieceOptions {
   visual?: { object: LoadedReference; starField: { data: StarFieldData; stars: Star[] } };
   /** The planet's moons at the chosen time (planets only). */
   satellites?: Satellite[];
+  /** Sky, air and cloud at the time and place; omitted for an ideal dark sky. */
+  atmosphere?: ViewAtmosphere;
+  /** Moon or planet phase. */
+  phase?: ViewPhase;
+  /** Turn the planet (and nothing else) so its pole sits at this position angle (see drawTarget). */
+  bodyRotationDeg?: number;
+  /** The telescope nudged off the target: where the target sits from the field centre, CSS px. */
+  panPx?: { x: number; y: number };
 }
 
 export interface EyepieceDrawInfo extends EyepieceLayout {
@@ -43,7 +53,7 @@ export function drawEyepieceView(
   ctx: CanvasRenderingContext2D,
   result: EyepieceResult,
   sizePx: number,
-  { target, focusOffset, longExposureColor, reference, filterKind, visual, satellites }: DrawEyepieceOptions,
+  { target, focusOffset, longExposureColor, reference, filterKind, visual, satellites, atmosphere, phase, bodyRotationDeg, panPx }: DrawEyepieceOptions,
 ): EyepieceDrawInfo {
   const layout = computeEyepieceLayout(result, sizePx, { category: target.category, focusOffset, surfaceBrightness: surfaceBrightness(target) });
   const c = sizePx / 2;
@@ -54,17 +64,24 @@ export function drawEyepieceView(
   ctx.fillStyle = "#000";
   ctx.fillRect(0, 0, sizePx, sizePx);
 
-  // Field of view: dark sky inside the field stop.
+  // Field of view: the sky inside the field stop (darkened by a small exit pupil).
+  const skyAtEye = result.metrics.skyBackgroundAtEye?.value ?? atmosphere?.skyMag;
   ctx.beginPath();
   ctx.arc(c, c, layout.fieldRadiusPx, 0, Math.PI * 2);
-  ctx.fillStyle = "#05070c";
+  ctx.fillStyle = atmosphere && skyAtEye !== undefined ? skyColour(skyAtEye, atmosphere.source) : "#05070c";
   ctx.fill();
   ctx.clip();
 
-  ctx.translate(c, c);
+  ctx.translate(c + (panPx?.x ?? 0), c + (panPx?.y ?? 0));
+  // Stars are catalogued around the target: reach as far as the field now extends from it.
+  const panReach = Math.hypot(panPx?.x ?? 0, panPx?.y ?? 0);
   const info: EyepieceDrawInfo = { ...layout };
-  const transmission = result.metrics.filterTransmission?.value ?? 1;
-  if (visual && !longExposureColor) {
+  const hidden = atmosphere !== undefined && atmosphere.altitudeDeg < 0;
+  const air = atmosphere ? atmosphericDimming(target, atmosphere) * deepSkyVisibility(target, atmosphere.skyMag, atmosphere.extinctionMag) : 1;
+  const transmission = (result.metrics.filterTransmission?.value ?? 1) * air;
+  if (hidden) {
+    // Below the horizon: only the sky (the viewport explains why).
+  } else if (visual && !longExposureColor) {
     // The extended object, grey, through a visual threshold curve. Open clusters are
     // their stars; any glow in their survey image is photographic (e.g. the Pleiades'
     // reflection nebula), so it is left out.
@@ -76,7 +93,7 @@ export function drawEyepieceView(
     const stars = visibleStars(visual.starField.data, visual.starField.stars, {
       limitMag,
       pxPerArcsec: layout.pxPerArcsec,
-      fieldRadiusPx: layout.fieldRadiusPx,
+      fieldRadiusPx: layout.fieldRadiusPx + panReach,
       blurPx: layout.blurPx,
       color: true,
     });
@@ -88,7 +105,7 @@ export function drawEyepieceView(
     ctx.globalAlpha = layout.brightness * transmission;
     const filters = [layout.blurPx > 0.05 ? `blur(${layout.blurPx.toFixed(2)}px)` : "", color ? "" : "grayscale(1)"];
     ctx.filter = filters.filter(Boolean).join(" ") || "none";
-    drawTarget(ctx, target, layout.targetMajorPx, layout.targetMinorPx, { color, reference });
+    drawTarget(ctx, target, layout.targetMajorPx, layout.targetMinorPx, { color, reference, phase, rotationDeg: bodyRotationDeg });
     if (satellites?.length) {
       ctx.globalAlpha = 1;
       ctx.filter = "none";
@@ -97,10 +114,14 @@ export function drawEyepieceView(
       info.satellites = drawSatellites(ctx, satellites, layout.targetMajorPx, {
         limitMag: result.metrics.limitingMagnitude.value + 2.5 * Math.log10(loss),
         blurPx: layout.blurPx,
-        fieldRadiusPx: layout.fieldRadiusPx,
+        fieldRadiusPx: layout.fieldRadiusPx + panReach,
       });
     }
     applyTint(ctx, color ? filterTint(filterKind) : undefined, ctx.canvas.width, ctx.canvas.height);
+  }
+  if (atmosphere) {
+    if (!hidden) applyTint(ctx, horizonTint(atmosphere), ctx.canvas.width, ctx.canvas.height);
+    drawClouds(ctx, ctx.canvas.width, ctx.canvas.height, atmosphere.cloud, cloudColour(atmosphere, skyAtEye));
   }
   ctx.restore();
 
@@ -161,4 +182,11 @@ function drawVisualObject(
   ctx.globalCompositeOperation = "screen";
   ctx.drawImage(off, 0, 0);
   ctx.restore();
+}
+
+/** Cloud colour: lit orange-grey by a city, a dark silhouette under a dark sky. */
+export function cloudColour(a: ViewAtmosphere, skyAtEye = a.skyMag): [number, number, number] {
+  const lit = Math.min(1, skyLevel(skyAtEye) * 2.2);
+  const glow = a.source === "light pollution" ? [205, 165, 130] : a.source === "twilight" ? [150, 160, 185] : [150, 155, 170];
+  return [0, 1, 2].map((i) => Math.round(14 + (glow[i] - 14) * lit)) as [number, number, number];
 }

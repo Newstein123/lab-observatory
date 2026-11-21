@@ -21,8 +21,14 @@ export function AccountMenu() {
 
   return (
     <div className="flex items-center gap-3 text-sm">
-      <span className="hidden max-w-[16rem] truncate text-muted sm:inline" title={auth.email}>
-        {auth.email}
+      <span className="flex min-w-0 items-center gap-2" title={auth.email}>
+        <span
+          aria-hidden
+          className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[radial-gradient(circle_at_30%_25%,#c9b8ff,#6c7bff_55%,#3b2a9e)] text-xs font-semibold uppercase text-white"
+        >
+          {auth.email?.[0] ?? "?"}
+        </span>
+        <span className="hidden max-w-[16rem] truncate text-muted sm:inline">{auth.email}</span>
       </span>
       <button
         type="button"

@@ -10,7 +10,7 @@
 
 export interface Satellite {
   name: string;
-  /** Offset from the planet's centre in planet equatorial radii: west +, north +. */
+  /** Offset from the planet's centre in planet equatorial radii: west +, north + (galileanMoons: along the planet's equator and axis; satellitesOf: celestial west and north). */
   x: number;
   y: number;
   /** Nearer to us than the planet (true) or beyond it. */
@@ -27,10 +27,10 @@ const D2R = Math.PI / 180;
 const sin = (deg: number) => Math.sin(deg * D2R);
 const cos = (deg: number) => Math.cos(deg * D2R);
 
-/** Julian Day (UT) of a JavaScript date. ΔT (~1 min) is ignored: Io moves < 0.2° in that time. */
-export function julianDay(date: Date): number {
-  return date.getTime() / 86_400_000 + 2_440_587.5;
-}
+// ΔT (~1 min) is ignored: Io moves < 0.2° in that time.
+import { poleAngleDeg } from "@/modules/sky/planets";
+import { julianDay } from "@/modules/sky/time";
+export { julianDay };
 
 const JUPITER_EQUATORIAL_KM = 71_492;
 /** Jupiter's polar radius / equatorial radius. */
@@ -108,8 +108,24 @@ export function hasSatellites(targetId: string): boolean {
   return targetId === "jupiter";
 }
 
+/**
+ * Moons as placed on the sky (celestial north up): Meeus gives them along the
+ * planet's equator, which is turned by the pole's position angle.
+ */
 export function satellitesOf(targetId: string, date: Date): Satellite[] {
-  return targetId === "jupiter" ? galileanMoons(date) : [];
+  if (targetId !== "jupiter") return [];
+  return rotateToSky(galileanMoons(date), poleAngleDeg(targetId, date) ?? 0);
+}
+
+/** Turn offsets from the planet's equatorial frame onto the sky (pole at position angle `poleDeg`). */
+export function rotateToSky(satellites: Satellite[], poleDeg: number): Satellite[] {
+  const c = Math.cos(poleDeg * D2R);
+  const s = Math.sin(poleDeg * D2R);
+  return satellites.map((m) => {
+    const east = -m.x;
+    const north = m.y;
+    return { ...m, x: -(east * c + north * s), y: -east * s + north * c };
+  });
 }
 
 export const SATELLITE_METHOD =

@@ -11,8 +11,41 @@ import { surfaceBrightness, type CuratedTarget } from "./catalogue";
  *   camera:   checks how many pixels the target spans (long exposures reach
  *             far fainter than the eye, so faintness is not the limit).
  *
- * Assumes a dark, rural sky. Light pollution makes faint targets harder.
+ * Without `sky`, assumes a dark, rural sky. With it, the limiting magnitude
+ * follows the sky brightness, the atmosphere dims the target, and the bright
+ * core of a galaxy or nebula must stand out from the sky glow.
  */
+
+/** The sky at the time and place of observing (see `@/modules/sky`). */
+export interface ReachSky {
+  /** Sky brightness towards the target, mag/arcsec². */
+  skyMag: number;
+  extinctionMag?: number;
+  cloudTransmission?: number;
+  /** Apparent altitude, degrees. */
+  altitudeDeg?: number;
+}
+
+/**
+ * How much brighter the brightest part of an extended object is than its
+ * average surface brightness, mag (ESTIMATED, by kind): diffuse nebulae have
+ * bright cores, galaxies bright centres, planetaries and remnants are even.
+ */
+export function coreConcentration(target: CuratedTarget): number {
+  if (target.category === "galaxy") return 2.5;
+  if (target.category !== "nebula") return 0;
+  return /planetary|supernova/i.test(target.subtype) ? 0.5 : 3.5;
+}
+
+/** Surface brightness of the brightest part of a galaxy or nebula, mag/arcsec² (undefined for others). */
+export function coreSurfaceBrightness(target: CuratedTarget): number | undefined {
+  const sb = surfaceBrightness(target);
+  if (sb === undefined || (target.category !== "galaxy" && target.category !== "nebula")) return undefined;
+  return sb - coreConcentration(target);
+}
+/** Core brightness above the sky needed to see it: comfortably / at all, mag. */
+const CORE_GOOD = 1.5;
+const CORE_VISIBLE = 3.5;
 
 export type Reach = "good" | "challenging" | "out_of_reach";
 
@@ -34,7 +67,7 @@ const RANK: Record<Reach, number> = { good: 0, challenging: 1, out_of_reach: 2 }
 const valid = (...xs: (number | undefined)[]) => xs.every((x) => typeof x === "number" && Number.isFinite(x) && x > 0);
 const fmt = (v: number, d = 1) => v.toFixed(d);
 
-export function assessReach(target: CuratedTarget, spec: ConfigurationSpec, mode: SimulationMode): ReachAssessment {
+export function assessReach(target: CuratedTarget, spec: ConfigurationSpec, mode: SimulationMode, sky?: ReachSky): ReachAssessment {
   const found: { reach: Reach; reason: string }[] = [];
   const add = (reach: Reach, reason: string) => found.push({ reach, reason });
   const D = spec.telescope.apertureMm;
@@ -43,14 +76,34 @@ export function assessReach(target: CuratedTarget, spec: ConfigurationSpec, mode
 
   if (!valid(D, efl)) return { reach: "good", reasons: [] };
 
+  const ext = sky?.extinctionMag ?? 0;
+  const cloudLoss = sky?.cloudTransmission !== undefined ? -2.5 * Math.log10(Math.max(0.01, sky.cloudTransmission)) : 0;
+  if (sky?.altitudeDeg !== undefined) {
+    if (sky.altitudeDeg < 0) add("out_of_reach", "Below the horizon at this time and place.");
+    else if (sky.altitudeDeg < 15) add("challenging", `Only ${fmt(sky.altitudeDeg, 0)}° up: thick, turbulent air near the horizon.`);
+  }
+  if (sky?.cloudTransmission !== undefined && sky.cloudTransmission < 0.2) add("out_of_reach", "Clouded out.");
+  const sbAll = surfaceBrightness(target);
+  if (sky && sbAll !== undefined && (target.category === "galaxy" || target.category === "nebula")) {
+    const core = sbAll - coreConcentration(target) + ext + cloudLoss;
+    const where = `the sky here (${fmt(sky.skyMag)} mag/arcsec²)`;
+    if (core > sky.skyMag + CORE_VISIBLE) add("out_of_reach", `Its brightest part is lost in ${where}.`);
+    else if (core > sky.skyMag + CORE_GOOD)
+      add("challenging", mode === "eyepiece" ? `Only its core shows against ${where}.` : `Faint against ${where}: needs many stacked exposures or a filter.`);
+  }
+
   if (mode === "eyepiece") {
-    const lim = optics.limitingMagnitude(D);
-    const m = target.magnitude;
+    const e0 = spec.eyepiece;
+    const pupil = e0 && valid(e0.focalLengthMm) ? D / optics.magnification(efl, e0.focalLengthMm) : 7;
+    // Dimming by air and cloud is charged once, as a brighter-looking target
+    // against the sky's own limit (not also by lowering that limit).
+    const lim = sky ? optics.skyLimitedMagnitude(D, sky.skyMag, pupil) : optics.limitingMagnitude(D);
+    const m = target.magnitude + ext + cloudLoss;
     if (typeof m === "number") {
       if (m > lim - 1) add("out_of_reach", `Magnitude ${fmt(m)} is beyond the estimated reach of a ${D} mm aperture (stars to about ${fmt(lim)}).`);
       else if (m > lim - 3) add("challenging", `Close to the faint limit of a ${D} mm aperture (stars to about ${fmt(lim)}).`);
     }
-    const sb = surfaceBrightness(target);
+    const sb = sbAll === undefined ? undefined : sbAll + ext;
     if (sb !== undefined && (target.category === "galaxy" || target.category === "nebula")) {
       if (sb > SB_OUT_OF_REACH) add("out_of_reach", `Too faint per unit area to see by eye (about ${fmt(sb)} mag/arcsec²).`);
       else if (sb > SB_CHALLENGING) add("challenging", `Low surface brightness (about ${fmt(sb)} mag/arcsec²): needs a dark sky and averted vision.`);

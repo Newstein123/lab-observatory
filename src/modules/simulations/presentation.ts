@@ -37,6 +37,12 @@ export const METRIC_PRESENTATION: Record<MetricKey, MetricPresentation> = {
   filterTransmission: { label: "Filter transmission", format: (m) => `${formatNumber(m.value * 100, 0)}%` },
   trailLength: { label: "Sky drift (untracked)", format: (m) => formatAngleArcsec(m.value) },
   trailPixels: { label: "Drift on sensor", format: (m) => `${formatNumber(m.value, m.value < 10 ? 1 : 0)} px` },
+  skyBrightness: { label: "Sky brightness", format: (m) => `${formatNumber(m.value, 1)} mag/″²` },
+  skyBackgroundAtEye: { label: "Sky background at the eyepiece", format: (m) => `${formatNumber(m.value, 1)} mag/″²` },
+  extinction: { label: "Atmospheric dimming", format: (m) => `${formatNumber(m.value, 2)} mag` },
+  airmass: { label: "Air mass", format: (m) => formatNumber(m.value, 2) },
+  effectiveSeeing: { label: "Seeing at this altitude", format: (m) => `${formatNumber(m.value, 1)}″` },
+  cloudTransmission: { label: "Light through cloud", format: (m) => `${formatNumber(m.value * 100, 0)}%` },
 };
 
 export const EYEPIECE_METRIC_ORDER: (keyof EyepieceMetrics)[] = [
@@ -53,6 +59,12 @@ export const EYEPIECE_METRIC_ORDER: (keyof EyepieceMetrics)[] = [
   "rayleighLimit",
   "lightGatheringVsEye",
   "limitingMagnitude",
+  "skyBrightness",
+  "skyBackgroundAtEye",
+  "extinction",
+  "airmass",
+  "effectiveSeeing",
+  "cloudTransmission",
 ];
 
 export const CAMERA_METRIC_ORDER: (keyof CameraMetrics)[] = [
@@ -72,4 +84,9 @@ export const CAMERA_METRIC_ORDER: (keyof CameraMetrics)[] = [
   "rayleighLimit",
   "lightGatheringVsEye",
   "limitingMagnitude",
+  "skyBrightness",
+  "extinction",
+  "airmass",
+  "effectiveSeeing",
+  "cloudTransmission",
 ];

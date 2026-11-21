@@ -294,7 +294,6 @@ function WorkbenchBody({ config, onConfigChange, mode: modeIn, onModeChange, foc
                 min={0}
                 max={TRAVEL_MM}
                 step={0.2}
-                sensitivity={0.08}
                 turns={6}
                 onChange={setFocus}
                 format={(v) => (style === "sct" || style === "maksutov" ? `${(v * 6).toFixed(0)}° turned` : `drawtube ${v.toFixed(1)} mm out`)}
@@ -376,7 +375,7 @@ function WorkbenchBody({ config, onConfigChange, mode: modeIn, onModeChange, foc
                   min={0}
                   max={90}
                   step={0.1}
-                  sensitivity={0.05}
+                  turns={4}
                   onChange={(v) => set({ latitudeDeg: v })}
                   format={(v) => `${v.toFixed(1)}° up`}
                   tone={Math.abs(pose.latitudeDeg - poleAlt) < 0.4 ? "good" : "default"}
@@ -387,7 +386,7 @@ function WorkbenchBody({ config, onConfigChange, mode: modeIn, onModeChange, foc
                   min={-20}
                   max={20}
                   step={0.1}
-                  sensitivity={0.04}
+                  turns={3}
                   onChange={(v) => set({ polarAzimuthDeg: v })}
                   format={(v) => (Math.abs(v) < 0.05 ? "due north" : `${Math.abs(v).toFixed(1)}° ${v > 0 ? "east" : "west"}`)}
                   tone={Math.abs(pose.polarAzimuthDeg) < 0.4 ? "good" : "default"}
@@ -416,7 +415,7 @@ function WorkbenchBody({ config, onConfigChange, mode: modeIn, onModeChange, foc
                   min={0}
                   max={1}
                   step={0.01}
-                  sensitivity={0.004}
+                  turns={1.5}
                   onChange={(v) => set({ counterweight: v })}
                   format={(v) => `${Math.round(v * 100)}% out`}
                   tone={balance.state === "balanced" ? "good" : "warn"}

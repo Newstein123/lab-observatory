@@ -63,16 +63,31 @@ export function ArQrCode({ path }: { path: string }) {
   const [svg, setSvg] = useState<string>();
   const [url, setUrl] = useState<string>();
   useEffect(() => {
-    // Under `make start` the app knows its public tunnel address; use it so a
-    // phone can reach the page even when this browser is on localhost.
-    const tunnel = process.env.NEXT_PUBLIC_DEV_PUBLIC_ORIGIN;
-    const origin = tunnel && isLocalHost(window.location.hostname) ? tunnel : window.location.origin;
-    const full = `${origin}${path}`;
-    setUrl(full);
     let cancelled = false;
-    import("qrcode")
-      .then((QR) => QR.toString(full, { type: "svg", margin: 1, errorCorrectionLevel: "L", color: { dark: "#000000", light: "#ffffff" } }))
-      .then((s) => !cancelled && setSvg(s))
+    // On localhost, a phone needs the public tunnel address (`make start` /
+    // `make tunnel`). Ask the dev server for the current one, since a dropped
+    // tunnel is reopened at a new address; the start-up value is the fallback.
+    const tunnelOrigin = async (): Promise<string | undefined> => {
+      if (!isLocalHost(window.location.hostname)) return undefined;
+      try {
+        const r = await fetch("/api/dev/tunnel", { cache: "no-store" });
+        // The dev server knows: an open tunnel's address, or none (never a stale one).
+        if (r.ok) return ((await r.json()) as { url: string | null }).url ?? undefined;
+      } catch {
+        // Not reachable: fall back below.
+      }
+      return process.env.NEXT_PUBLIC_DEV_PUBLIC_ORIGIN || undefined;
+    };
+    tunnelOrigin()
+      .then((tunnel) => {
+        const full = `${tunnel ?? window.location.origin}${path}`;
+        if (cancelled) return;
+        setUrl(full);
+        return import("qrcode").then((QR) =>
+          QR.toString(full, { type: "svg", margin: 1, errorCorrectionLevel: "L", color: { dark: "#000000", light: "#ffffff" } }),
+        );
+      })
+      .then((s) => !cancelled && s && setSvg(s))
       .catch(() => !cancelled && setSvg(undefined));
     return () => {
       cancelled = true;
@@ -92,8 +107,8 @@ export function ArQrCode({ path }: { path: string }) {
       <p className="text-xs text-muted">Scan with the camera app. AR works on iPhone/iPad (iOS 12+) and on Android phones with ARCore in Chrome.</p>
       {local && (
         <p className="text-xs text-warning">
-          This link points at localhost, which your phone cannot reach. Start the app with <code>make start</code> (it opens a public
-          tunnel), or open the deployed site.
+          This link points at localhost, which your phone cannot reach: no public tunnel is open. Run <code>make tunnel</code> (or{" "}
+          <code>make start</code>), then reopen this, or open the deployed site.
         </p>
       )}
       {url && (

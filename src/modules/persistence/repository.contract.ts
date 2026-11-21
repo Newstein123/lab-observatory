@@ -263,6 +263,39 @@ export function runRepositoryContract(name: string, makeRepository: () => Promis
         expect(checkReproduction(reopened!).identical).toBe(true);
       });
 
+      it("saves the place, sky and air, and reproduces the result", async () => {
+        const conditions = {
+          seeingArcsec: 1.6,
+          skyBrightnessMagArcsec2: 17.42,
+          extinctionMag: 0.61,
+          airmass: 1.12,
+          cloudTransmission: 0.81,
+          targetAltitudeDeg: 63.4,
+        };
+        const s = await repo.createSession(
+          buildSession({
+            configuration: SPEC,
+            target: m42,
+            mode: "eyepiece",
+            conditions,
+            view: {
+              ...view,
+              observedAt: "2026-11-16T18:00:00.000Z",
+              site: { name: "Bangkok", latDeg: 13.8, lonDeg: 100.5, timeZone: "Asia/Bangkok" },
+              conditionsSource: "live",
+              skySource: "light pollution",
+              cloud: 0.2,
+            },
+          }),
+        );
+        const reopened = await repo.getSession(s.id);
+        expect(reopened?.conditions).toEqual(conditions);
+        expect(reopened?.view.site).toEqual({ name: "Bangkok", latDeg: 13.8, lonDeg: 100.5, timeZone: "Asia/Bangkok" });
+        expect(reopened?.view.skySource).toBe("light pollution");
+        expect(reopened?.result.metrics.skyBrightness?.value).toBe(17.42);
+        expect(checkReproduction(reopened!).identical).toBe(true);
+      });
+
       it("is unaffected by later configuration edits or deletion", async () => {
         const c = await repo.createConfiguration(SPEC);
         const s = await repo.createSession(

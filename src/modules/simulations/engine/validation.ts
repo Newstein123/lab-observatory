@@ -58,6 +58,11 @@ export const targetExtentSchema = z.object({
 
 export const observingConditionsSchema = z.object({
   seeingArcsec: positive(0.1, 20).optional(),
+  skyBrightnessMagArcsec2: z.number().finite().min(-5).max(23).optional(),
+  extinctionMag: z.number().finite().min(0).max(20).optional(),
+  airmass: z.number().finite().min(1).max(40).optional(),
+  cloudTransmission: z.number().finite().min(0).max(1).optional(),
+  targetAltitudeDeg: z.number().finite().min(-90).max(90).optional(),
 });
 
 export const exposureSettingsSchema = z.object({

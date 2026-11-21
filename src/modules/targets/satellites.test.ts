@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { galileanMoons, julianDay } from "./satellites";
+import { planetPosition } from "@/modules/sky/planets";
+import { galileanMoons, julianDay, satellitesOf } from "./satellites";
 
 describe("galileanMoons", () => {
   it("julianDay matches the J2000 epoch", () => {
@@ -37,5 +38,21 @@ describe("galileanMoons", () => {
     const moons = Array.from({ length: 200 }, (_, h) => galileanMoons(new Date(Date.UTC(2026, 0, 1, h))));
     for (const set of moons) for (const m of set) expect(m.hidden).toBe(m.x * m.x + (m.y / 0.9351) ** 2 < 1);
     expect(moons.flat().some((m) => m.hidden)).toBe(true);
+  });
+
+  it("places the moons on the sky within a few arcseconds of JPL Horizons, tilt included", () => {
+    // Horizons geocentric apparent offsets from Jupiter, arcsec [east, north], retrieved 2026-11-21.
+    const refs: { at: string; moons: Record<string, [number, number]> }[] = [
+      { at: "2025-09-02T00:00:00Z", moons: { Io: [96.8, -14.6], Europa: [99.2, -19.5], Ganymede: [-252.3, 39.4], Callisto: [-419.0, 61.6] } },
+      { at: "2025-11-02T00:00:00Z", moons: { Io: [-103.9, 20.6], Europa: [-56.3, 8.8], Ganymede: [297.4, -63.0], Callisto: [461.2, -102.5] } },
+    ];
+    for (const ref of refs) {
+      const date = new Date(ref.at);
+      const radius = planetPosition("jupiter", date).majorArcsec / 2;
+      for (const m of satellitesOf("jupiter", date)) {
+        const [east, north] = ref.moons[m.name];
+        expect(Math.hypot(-m.x * radius - east, m.y * radius - north), `${m.name} ${ref.at}`).toBeLessThan(4);
+      }
+    }
   });
 });

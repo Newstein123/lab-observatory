@@ -68,6 +68,9 @@ export function LabHome() {
             <Link href="/observatory/configurations" className={buttonStyles({ size: "lg" })}>
               My configurations
             </Link>
+            <Link href="/lab/tonight" className={buttonStyles({ variant: "ghost", size: "lg" })}>
+              ☾ What&apos;s up tonight
+            </Link>
           </div>
         </div>
         <EquipmentViewer

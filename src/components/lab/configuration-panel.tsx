@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useId, useState } from "react";
 import { EquipmentViewer, rigItem } from "@/components/equipment-3d";
 import { inputClass, NumberField, Panel, SelectField } from "@/components/ui/fields";
+import { Icons } from "@/components/ui/icons";
 import { CONFIGURATION_STATUSES, type ConfigurationSpec, type ConfigurationStatus } from "@/modules/configurations/models";
 import { CATALOGS, TELESCOPE_CATALOG, getTelescopeEntry } from "@/modules/equipment/catalog";
 import {
@@ -79,220 +80,273 @@ export function ConfigurationPanel({ config, onChange, errors, mode = "visual", 
   const isLinked = Boolean(config.profileId);
   const catalogEntry = linked ? undefined : getTelescopeEntry(config.catalogRef);
   const owned = useOwnerQuery((r) => r.listAccessories(), []).data ?? [];
+  const [show3d, setShow3d] = useState(true);
+  // Number fields stay tucked away until wanted, or until one of them is invalid.
+  const hasErrors = Object.keys(errors).some((k) => /^(optics|eyepiece|camera|barlow)\./.test(k));
+  const [editOpen, setEditOpen] = useState(false);
+  const [wasErrors, setWasErrors] = useState(hasErrors);
+  if (hasErrors !== wasErrors) {
+    setWasErrors(hasErrors);
+    if (hasErrors) setEditOpen(true);
+  }
+  const editId = useId();
+  const imaging = mode === "imaging";
+
+  const telescopePicker = (
+    <EquipmentPicker
+      compact
+      label="Telescope"
+      current={{
+        eyebrow: linked ? "My equipment" : catalogEntry?.manufacturer ?? (config.telescope.label ? undefined : "Custom"),
+        title: linked?.name ?? (catalogEntry ? catalogEntry.model : config.telescope.label ?? "Custom telescope"),
+        detail: opticsDetail(config.telescope),
+        visual: { type: "telescope", optics: config.telescope },
+      }}
+      selectedId={config.profileId ? `profile:${config.profileId}` : config.catalogRef ? `catalog:${config.catalogRef}` : undefined}
+      options={[
+        ...profiles.map<PickerOption>((p) => ({
+          id: `profile:${p.id}`,
+          group: "My equipment",
+          eyebrow: p.manufacturer,
+          title: p.name,
+          detail: opticsDetail(opticsOf(p)),
+          visual: { type: "telescope", optics: opticsOf(p) },
+        })),
+        ...[...TELESCOPE_CATALOG].sort((a, b) => a.manufacturer.localeCompare(b.manufacturer)).map<PickerOption>((t) => ({
+          id: `catalog:${t.id}`,
+          group: t.manufacturer,
+          eyebrow: t.manufacturer,
+          title: t.model,
+          detail: opticsDetail(t.optics),
+          visual: { type: "telescope", optics: t.optics },
+        })),
+      ]}
+      onPick={(id) => {
+        const [source, ref] = splitId(id);
+        if (source === "profile") {
+          const p = profiles.find((x) => x.id === ref);
+          if (p) set({ profileId: p.id, catalogRef: undefined, telescope: opticsOf(p) });
+        } else {
+          const t = TELESCOPE_CATALOG.find((x) => x.id === ref);
+          if (t) set({ profileId: undefined, catalogRef: t.id, telescope: { ...t.optics } });
+        }
+      }}
+      footer={
+        <>
+          Or enter your own aperture and focal length under “Edit values”.{" "}
+          <Link href="/observatory/equipment" className="text-accent hover:underline">
+            Add a telescope you own
+          </Link>{" "}
+          to reuse it.
+        </>
+      }
+    />
+  );
+  const eyepiecePicker = <AccessoryPicker kind="eyepiece" config={config} owned={owned} set={set} note={imaging ? "for eyepiece view" : undefined} />;
+  const cameraPicker = <AccessoryPicker kind="camera" config={config} owned={owned} set={set} note={imaging ? undefined : "for camera view"} />;
 
   return (
     <Panel
-      title="Configuration"
+      title="Equipment Setup"
+      icon={<Icons.Layers />}
       actions={
-        <Link href="/lab/configure" className="text-xs text-accent hover:underline">
-          Equipment in 3D →
-        </Link>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={show3d}
+          onClick={() => setShow3d((v) => !v)}
+          className="inline-flex items-center gap-1.5 text-xs text-muted hover:text-foreground"
+        >
+          <span className={`relative h-4 w-7 rounded-full transition-colors ${show3d ? "bg-accent-strong" : "bg-surface-sunken ring-1 ring-border-strong"}`}>
+            <span className={`absolute top-0.5 size-3 rounded-full bg-white transition-all ${show3d ? "left-3.5" : "left-0.5"}`} />
+          </span>
+          3D view
+        </button>
       }
     >
-      <div className="space-y-5">
-        <SetupPreview
-          config={config}
-          onChange={onChange}
-          mode={mode}
-          onModeChange={onModeChange}
-          focusOffset={focusOffset}
-          onFocusOffsetChange={onFocusOffsetChange}
-        />
-        <div className="space-y-3">
-          <div className="space-y-1">
-            <label htmlFor={nameId} className="block text-xs text-muted">
-              Name
-            </label>
-            <input
-              id={nameId}
-              value={config.name}
-              maxLength={100}
-              onChange={(e) => set({ name: e.target.value })}
-              className={inputClass}
-            />
-          </div>
-          <SelectField<ConfigurationStatus>
-            label="Status"
-            value={config.status}
-            options={CONFIGURATION_STATUSES}
-            onChange={(status) => set({ status })}
+      <div className="space-y-4">
+        {show3d && (
+          <SetupPreview
+            config={config}
+            onChange={onChange}
+            mode={mode}
+            onModeChange={onModeChange}
+            focusOffset={focusOffset}
+            onFocusOffsetChange={onFocusOffsetChange}
           />
+        )}
+
+        {/* The equipment, most-used first; the part the current view doesn't use goes last. */}
+        <div role="list" aria-label="Equipment" className="space-y-1.5">
+          <div role="listitem">{telescopePicker}</div>
+          <div role="listitem">{imaging ? cameraPicker : eyepiecePicker}</div>
+          <div role="listitem">
+            <AccessoryPicker kind="barlow" config={config} owned={owned} set={set} />
+          </div>
+          <div role="listitem">
+            <AccessoryPicker kind="filter" config={config} owned={owned} set={set} />
+          </div>
+          <div role="listitem">
+            <AccessoryPicker kind="mount" config={config} owned={owned} set={set} />
+          </div>
+          <div role="listitem" className="opacity-75 hover:opacity-100">
+            {imaging ? eyepiecePicker : cameraPicker}
+          </div>
         </div>
 
-        <Section title="Telescope">
-          <EquipmentPicker
-            label="Telescope"
-            current={{
-              eyebrow: linked ? "My equipment" : catalogEntry?.manufacturer ?? (config.telescope.label ? undefined : "Custom"),
-              title: linked?.name ?? (catalogEntry ? catalogEntry.model : config.telescope.label ?? "Custom telescope"),
-              detail: opticsDetail(config.telescope),
-              visual: { type: "telescope", optics: config.telescope },
-            }}
-            selectedId={config.profileId ? `profile:${config.profileId}` : config.catalogRef ? `catalog:${config.catalogRef}` : undefined}
-            options={[
-              ...profiles.map<PickerOption>((p) => ({
-                id: `profile:${p.id}`,
-                group: "My equipment",
-                eyebrow: p.manufacturer,
-                title: p.name,
-                detail: opticsDetail(opticsOf(p)),
-                visual: { type: "telescope", optics: opticsOf(p) },
-              })),
-              ...[...TELESCOPE_CATALOG].sort((a, b) => a.manufacturer.localeCompare(b.manufacturer)).map<PickerOption>((t) => ({
-                id: `catalog:${t.id}`,
-                group: t.manufacturer,
-                eyebrow: t.manufacturer,
-                title: t.model,
-                detail: opticsDetail(t.optics),
-                visual: { type: "telescope", optics: t.optics },
-              })),
-            ]}
-            onPick={(id) => {
-              const [source, ref] = splitId(id);
-              if (source === "profile") {
-                const p = profiles.find((x) => x.id === ref);
-                if (p) set({ profileId: p.id, catalogRef: undefined, telescope: opticsOf(p) });
-              } else {
-                const t = TELESCOPE_CATALOG.find((x) => x.id === ref);
-                if (t) set({ profileId: undefined, catalogRef: t.id, telescope: { ...t.optics } });
-              }
-            }}
-            footer={
-              <>
-                Or enter your own aperture and focal length below.{" "}
-                <Link href="/observatory/equipment" className="text-accent hover:underline">
-                  Add a telescope you own
-                </Link>{" "}
-                to reuse it.
-              </>
-            }
-          />
-          {isLinked && (
-            <p className="text-xs text-muted">
-              {linked ? "Optics come from your equipment." : "The linked telescope was deleted."}{" "}
-              <button type="button" className="text-accent hover:underline" onClick={() => set({ profileId: undefined })}>
-                Unlink to edit
-              </button>
-            </p>
-          )}
-          <SelectField<OpticalDesign>
-            label="Optical design"
-            value={config.telescope.opticalDesign ?? ""}
-            placeholder="Select…"
-            options={OPTICAL_DESIGNS}
-            disabled={isLinked}
-            onChange={(opticalDesign) => setOptics({ opticalDesign })}
-          />
-          <div className="grid grid-cols-2 gap-3">
-            <NumberField
-              label="Aperture"
-              unit="mm"
-              value={config.telescope.apertureMm}
-              disabled={isLinked}
-              error={errors["optics.apertureMm"]}
-              onChange={(v) => setOptics({ apertureMm: num(v) })}
-            />
-            <NumberField
-              label="Focal length"
-              unit="mm"
-              value={config.telescope.focalLengthMm}
-              disabled={isLinked}
-              error={errors["optics.focalLengthMm"]}
-              onChange={(v) => setOptics({ focalLengthMm: num(v) })}
-            />
-          </div>
-          <AccessoryPicker kind="mount" config={config} owned={owned} set={set} />
-        </Section>
+        <div>
+          <button
+            type="button"
+            aria-expanded={editOpen}
+            aria-controls={editId}
+            onClick={() => setEditOpen((o) => !o)}
+            title="Name, status, optics and sizes"
+            className="flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-border-strong bg-surface-sunken/50 text-sm font-medium transition-colors hover:border-accent"
+          >
+            <Icons.Sliders className="size-4" />
+            Edit values
+            <Icons.ChevronDown className={`size-4 text-muted transition-transform ${editOpen ? "rotate-180" : ""}`} />
+          </button>
 
-        <Section title="Eyepiece">
-          <AccessoryPicker kind="eyepiece" config={config} owned={owned} set={set} />
-          <div className="grid grid-cols-2 gap-3">
-            <NumberField
-              label="Focal length"
-              unit="mm"
-              step={0.5}
-              value={config.eyepiece?.focalLengthMm}
-              error={errors["eyepiece.focalLengthMm"]}
-              onChange={(v) => set({ eyepiece: { ...unlabel(config.eyepiece), focalLengthMm: num(v) } })}
-            />
-            <NumberField
-              label="Apparent field"
-              unit="°"
-              value={config.eyepiece?.apparentFovDeg}
-              error={errors["eyepiece.apparentFovDeg"]}
-              onChange={(v) => set({ eyepiece: { ...unlabel(config.eyepiece), apparentFovDeg: num(v) } })}
-            />
-          </div>
-          <NumberField
-            label="Field stop (optional)"
-            unit="mm"
-            step={0.1}
-            value={config.eyepiece?.fieldStopMm}
-            error={errors["eyepiece.fieldStopMm"]}
-            hint="If known, gives a more accurate true field."
-            onChange={(v) => set({ eyepiece: { ...unlabel(config.eyepiece), fieldStopMm: v } })}
-          />
-        </Section>
+          <div id={editId} hidden={!editOpen} className="mt-4 space-y-5">
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <label htmlFor={nameId} className="block text-xs text-muted">
+                  Name
+                </label>
+                <input id={nameId} value={config.name} maxLength={100} onChange={(e) => set({ name: e.target.value })} className={inputClass} />
+              </div>
+              <SelectField<ConfigurationStatus> label="Status" value={config.status} options={CONFIGURATION_STATUSES} onChange={(status) => set({ status })} />
+            </div>
 
-        <Section title="Camera">
-          <AccessoryPicker kind="camera" config={config} owned={owned} set={set} />
-          <div className="grid grid-cols-2 gap-3">
-            <NumberField
-              label="Sensor width"
-              unit="mm"
-              step={0.01}
-              value={config.camera?.sensorWidthMm}
-              error={errors["camera.sensorWidthMm"]}
-              onChange={(v) => set({ camera: { ...unlabel(config.camera), sensorWidthMm: num(v) } })}
-            />
-            <NumberField
-              label="Sensor height"
-              unit="mm"
-              step={0.01}
-              value={config.camera?.sensorHeightMm}
-              error={errors["camera.sensorHeightMm"]}
-              onChange={(v) => set({ camera: { ...unlabel(config.camera), sensorHeightMm: num(v) } })}
-            />
-          </div>
-          <NumberField
-            label="Pixel size"
-            unit="µm"
-            step={0.01}
-            value={config.camera?.pixelSizeUm}
-            error={errors["camera.pixelSizeUm"]}
-            onChange={(v) => set({ camera: { ...unlabel(config.camera), pixelSizeUm: num(v) } })}
-          />
-        </Section>
+            <Group title="Telescope" icon={<Icons.Telescope />}>
+              {isLinked && (
+                <p className="text-xs text-muted">
+                  {linked ? "Optics come from your equipment." : "The linked telescope was deleted."}{" "}
+                  <button type="button" className="text-accent hover:underline" onClick={() => set({ profileId: undefined })}>
+                    Unlink to edit
+                  </button>
+                </p>
+              )}
+              <SelectField<OpticalDesign>
+                label="Optical design"
+                value={config.telescope.opticalDesign ?? ""}
+                placeholder="Select…"
+                options={OPTICAL_DESIGNS}
+                disabled={isLinked}
+                onChange={(opticalDesign) => setOptics({ opticalDesign })}
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <NumberField
+                  label="Aperture"
+                  unit="mm"
+                  value={config.telescope.apertureMm}
+                  disabled={isLinked}
+                  error={errors["optics.apertureMm"]}
+                  onChange={(v) => setOptics({ apertureMm: num(v) })}
+                />
+                <NumberField
+                  label="Focal length"
+                  unit="mm"
+                  value={config.telescope.focalLengthMm}
+                  disabled={isLinked}
+                  error={errors["optics.focalLengthMm"]}
+                  onChange={(v) => setOptics({ focalLengthMm: num(v) })}
+                />
+              </div>
+            </Group>
 
-        <Section title="Accessories">
-          <AccessoryPicker kind="barlow" config={config} owned={owned} set={set} />
-          {config.barlow && (
-            <NumberField
-              label="Barlow factor"
-              unit="×"
-              step={0.5}
-              value={config.barlow.factor}
-              error={errors["barlow.factor"]}
-              onChange={(v) => set({ barlow: { ...unlabel(config.barlow), factor: num(v) } })}
-            />
-          )}
-          <AccessoryPicker kind="filter" config={config} owned={owned} set={set} />
-          <p className="text-xs text-muted">Filters dim and tint the view using a typical transmission (estimated).</p>
-        </Section>
+            <Group title="Eyepiece" icon={<Icons.Eyepiece />}>
+              <div className="grid grid-cols-2 gap-3">
+                <NumberField
+                  label="Focal length"
+                  unit="mm"
+                  step={0.5}
+                  value={config.eyepiece?.focalLengthMm}
+                  error={errors["eyepiece.focalLengthMm"]}
+                  onChange={(v) => set({ eyepiece: { ...unlabel(config.eyepiece), focalLengthMm: num(v) } })}
+                />
+                <NumberField
+                  label="Apparent field"
+                  unit="°"
+                  value={config.eyepiece?.apparentFovDeg}
+                  error={errors["eyepiece.apparentFovDeg"]}
+                  onChange={(v) => set({ eyepiece: { ...unlabel(config.eyepiece), apparentFovDeg: num(v) } })}
+                />
+              </div>
+              <NumberField
+                label="Field stop (optional)"
+                unit="mm"
+                step={0.1}
+                value={config.eyepiece?.fieldStopMm}
+                error={errors["eyepiece.fieldStopMm"]}
+                hint="If known, gives a more accurate true field."
+                onChange={(v) => set({ eyepiece: { ...unlabel(config.eyepiece), fieldStopMm: v } })}
+              />
+            </Group>
+
+            <Group title="Camera" icon={<Icons.Camera />}>
+              <div className="grid grid-cols-2 gap-3">
+                <NumberField
+                  label="Sensor width"
+                  unit="mm"
+                  step={0.01}
+                  value={config.camera?.sensorWidthMm}
+                  error={errors["camera.sensorWidthMm"]}
+                  onChange={(v) => set({ camera: { ...unlabel(config.camera), sensorWidthMm: num(v) } })}
+                />
+                <NumberField
+                  label="Sensor height"
+                  unit="mm"
+                  step={0.01}
+                  value={config.camera?.sensorHeightMm}
+                  error={errors["camera.sensorHeightMm"]}
+                  onChange={(v) => set({ camera: { ...unlabel(config.camera), sensorHeightMm: num(v) } })}
+                />
+              </div>
+              <NumberField
+                label="Pixel size"
+                unit="µm"
+                step={0.01}
+                value={config.camera?.pixelSizeUm}
+                error={errors["camera.pixelSizeUm"]}
+                onChange={(v) => set({ camera: { ...unlabel(config.camera), pixelSizeUm: num(v) } })}
+              />
+            </Group>
+
+            {config.barlow && (
+              <Group title="Barlow" icon={<Icons.Barlow />}>
+                <NumberField
+                  label="Barlow factor"
+                  unit="×"
+                  step={0.5}
+                  value={config.barlow.factor}
+                  error={errors["barlow.factor"]}
+                  onChange={(v) => set({ barlow: { ...unlabel(config.barlow), factor: num(v) } })}
+                />
+              </Group>
+            )}
+            <p className="text-xs text-muted">Filters dim and tint the view using a typical transmission (estimated).</p>
+          </div>
+        </div>
       </div>
     </Panel>
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+/** A labelled group of fields inside "Edit values". */
+function Group({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <fieldset className="min-w-0 space-y-3 border-t border-border pt-4">
-      <legend className="pr-2 text-xs font-semibold uppercase tracking-wide text-muted">{title}</legend>
+    <fieldset aria-label={title} className="min-w-0 space-y-3">
+      <p aria-hidden className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted">
+        <span className="text-accent [&>svg]:size-4">{icon}</span>
+        {title}
+        <span className="h-px flex-1 bg-border" />
+      </p>
       {children}
     </fieldset>
   );
 }
-
 
 /**
  * Live 3D model of the whole setup: the eyepiece (or camera) and accessories
@@ -325,10 +379,10 @@ function SetupPreview({
           controls={false}
           autoRotate={false}
           label={`3D model of ${t.label ?? `a ${t.apertureMm} mm telescope`}${config.mount?.label ? ` on ${config.mount.label}` : ""}, with the ${mode === "visual" ? "eyepiece" : "camera"} fitted`}
-          className="h-[210px]"
+          className="h-[170px]"
         />
       ) : (
-        <div className="flex h-[210px] items-center justify-center p-4 text-center text-xs text-muted">
+        <div className="flex h-[170px] items-center justify-center p-4 text-center text-xs text-muted">
           Enter a valid aperture and focal length to see the telescope.
         </div>
       )}
@@ -386,16 +440,19 @@ function visualOf(pair: AccessorySpecPair): PickerVisual {
 
 const sameSpec = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
-function AccessoryPicker({
+/** A compact picker for one accessory slot (eyepiece, camera, Barlow, filter, mount). */
+export function AccessoryPicker({
   kind,
   config,
   owned,
   set,
+  note,
 }: {
   kind: Kind;
   config: ConfigurationSpec;
   owned: Accessory[];
   set: (patch: Partial<ConfigurationSpec>) => void;
+  note?: string;
 }) {
   const label = ACCESSORY_KINDS.find((k) => k.value === kind)!.label;
   const spec = config[kind] as AnySpec | undefined;
@@ -428,6 +485,8 @@ function AccessoryPicker({
 
   return (
     <EquipmentPicker
+      compact
+      note={note}
       label={label}
       current={
         spec && {

@@ -328,7 +328,6 @@ export default function InteractiveAr({ setup }: { setup: ArSetup }) {
                             min={0}
                             max={FOCUS_TRAVEL_MM}
                             step={0.2}
-                            sensitivity={0.08}
                             turns={6}
                             onChange={(v) => set({ focusMm: v })}
                             format={(v) => `${v.toFixed(1)} mm`}
@@ -356,9 +355,9 @@ export default function InteractiveAr({ setup }: { setup: ArSetup }) {
                           °
                         </label>
                         <div className="flex justify-around">
-                          <Knob label="Latitude" value={controls.latitudeDeg} min={0} max={90} step={0.1} sensitivity={0.05} onChange={(v) => set({ latitudeDeg: v })} format={(v) => `${v.toFixed(1)}°`} size={56} tone={Math.abs(controls.latitudeDeg - poleAlt) < 0.4 ? "good" : "default"} />
-                          <Knob label="Azimuth" value={controls.polarAzimuthDeg} min={-20} max={20} step={0.1} sensitivity={0.04} onChange={(v) => set({ polarAzimuthDeg: v })} format={(v) => `${v.toFixed(1)}°`} size={56} tone={Math.abs(controls.polarAzimuthDeg) < 0.4 ? "good" : "default"} />
-                          <Knob label="Weight" value={controls.counterweight} min={0} max={1} step={0.01} sensitivity={0.004} onChange={(v) => set({ counterweight: v })} format={(v) => `${Math.round(v * 100)}%`} size={56} tone={balance.state === "balanced" ? "good" : "warn"} />
+                          <Knob label="Latitude" value={controls.latitudeDeg} min={0} max={90} step={0.1} turns={4} onChange={(v) => set({ latitudeDeg: v })} format={(v) => `${v.toFixed(1)}°`} size={56} tone={Math.abs(controls.latitudeDeg - poleAlt) < 0.4 ? "good" : "default"} />
+                          <Knob label="Azimuth" value={controls.polarAzimuthDeg} min={-20} max={20} step={0.1} turns={3} onChange={(v) => set({ polarAzimuthDeg: v })} format={(v) => `${v.toFixed(1)}°`} size={56} tone={Math.abs(controls.polarAzimuthDeg) < 0.4 ? "good" : "default"} />
+                          <Knob label="Weight" value={controls.counterweight} min={0} max={1} step={0.01} turns={1.5} onChange={(v) => set({ counterweight: v })} format={(v) => `${Math.round(v * 100)}%`} size={56} tone={balance.state === "balanced" ? "good" : "warn"} />
                         </div>
                         <p className={`text-xs ${polarError <= POLAR_OK_DEG ? "text-[#4ade80]" : "text-white/85"}`}>
                           {polarError <= POLAR_OK_DEG

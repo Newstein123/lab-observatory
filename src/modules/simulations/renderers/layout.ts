@@ -60,12 +60,30 @@ export const CAMERA_SENSITIVITY: Record<TargetCategory, number> = {
   cluster: 0.04,
 };
 
+/** Camera sensitivity to the sky background (as a nebula of the same surface brightness). */
+const SKY_SENSITIVITY = 0.04;
+/** Fraction of the sky glow left visible after background subtraction. */
+const SKY_RESIDUAL = 0.3;
+
 /** Photon count at unit (sensitivity × relative signal); sets the shot-noise floor. */
 const PHOTONS_PER_UNIT = 400;
 const MIN_NOISE_LEVEL = 0.05;
 const MAX_NOISE_SIGMA = 0.35;
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+
+/** Natural dark sky (mag/arcsec²) and the sky this much brighter at which the residual glow is full (≈ inner city). */
+const NATURAL_SKY_MAG = 21.9;
+const FULL_RESIDUAL_MAGS = 6;
+
+/** 0 under a natural dark sky, rising (logarithmically, as a stretch shows it) to 1 for a city sky. */
+export function excessSkyFraction(skyMag: number): number {
+  return clamp((NATURAL_SKY_MAG - skyMag) / FULL_RESIDUAL_MAGS, 0, 1);
+}
+
+/** Surface brightness at the eye (mag/arcsec²) that looks fully bright, and the span over which it fades. */
+const BRIGHT_AT_EYE = 6;
+const BRIGHT_RANGE = 14;
 
 export interface EyepieceLayout {
   sizePx: number;
@@ -102,9 +120,18 @@ export function computeEyepieceLayout(
 
   // Perceived brightness falls roughly logarithmically with surface brightness.
   const sb = metrics.surfaceBrightnessVsEye.value;
-  // Fainter targets of the same class look dimmer, compressed as the eye perceives it.
-  const targetFactor = clamp(1 + Math.log10(relativeSurfaceFactor(category, surfaceBrightness)) / 4, 0.35, 1.3);
-  const brightness = clamp(VISUAL_VISIBILITY[category] * targetFactor * (1 + Math.log10(sb) / 3), 0.08, 1);
+  let brightness: number;
+  if (category === "moon" || category === "planet") {
+    // Bright bodies: what the eye sees is their surface brightness at the eyepiece
+    // (mag/arcsec²), dimmed by the small exit pupil of high power. The Moon at 0.3 mm
+    // is still about as bright as a twilight sky: plainly grey, never black.
+    const atEye = (surfaceBrightness ?? REFERENCE_SURFACE_BRIGHTNESS[category]) - 2.5 * Math.log10(Math.max(sb, 1e-9));
+    brightness = clamp(1 - (atEye - BRIGHT_AT_EYE) / BRIGHT_RANGE, 0.12, 1);
+  } else {
+    // Fainter targets of the same class look dimmer, compressed as the eye perceives it.
+    const targetFactor = clamp(1 + Math.log10(relativeSurfaceFactor(category, surfaceBrightness)) / 4, 0.35, 1.3);
+    brightness = clamp(VISUAL_VISIBILITY[category] * targetFactor * (1 + Math.log10(sb) / 3), 0.08, 1);
+  }
 
   return {
     sizePx,
@@ -135,6 +162,8 @@ export interface CameraLayout {
   level: number;
   /** Std-dev of per-pixel display noise, 0–1 units. */
   noiseSigma: number;
+  /** Residual sky glow added to the background, 0–1 display units. */
+  skyLevel: number;
 }
 
 export interface CameraViewOptions {
@@ -145,12 +174,16 @@ export interface CameraViewOptions {
   /** Set when exposure is simulated; otherwise a neutral preview is drawn. */
   exposureS?: number;
   surfaceBrightness?: number;
+  /** Sky brightness towards the target, mag/arcsec² (adds glow and noise). */
+  skyMag?: number;
+  /** How much brighter (mag) the target's core is than its mean; the core is what stands out of the sky noise. */
+  coreConcentrationMag?: number;
 }
 
 export function computeCameraLayout(
   result: CameraResult,
   displayWidthPx: number,
-  { category, zoom, gain, exposureS, surfaceBrightness }: CameraViewOptions,
+  { category, zoom, gain, exposureS, surfaceBrightness, skyMag, coreConcentrationMag = 0 }: CameraViewOptions,
 ): CameraLayout {
   const { framing, metrics } = result;
   if (framing.shape !== "rectangle") throw new Error("Camera result must have rectangular framing");
@@ -169,12 +202,24 @@ export function computeCameraLayout(
 
   let level = 0.85;
   let noiseSigma = 0;
+  let skyLevel = 0;
   if (exposureS !== undefined && metrics.relativeExposureIndex) {
     const signal = metrics.relativeExposureIndex.value / gain;
     const k = CAMERA_SENSITIVITY[category] * relativeSurfaceFactor(category, surfaceBrightness);
     level = 1 - Math.exp(-k * signal * gain);
+    // The sky is an extended source like a nebula: same sensitivity per mag/arcsec².
+    const kSky = skyMag === undefined ? 0 : SKY_SENSITIVITY * 10 ** (-0.4 * (skyMag - 21.9));
+    // Most of the sky is subtracted in processing; its photon noise is not.
+    // What stays visible is the glow and gradients of light *above* a natural
+    // dark sky: none under a pristine sky, the full residual in a city.
+    skyLevel = skyMag === undefined ? 0 : SKY_RESIDUAL * excessSkyFraction(skyMag) * (1 - Math.exp(-kSky * signal * gain));
     const photons = Math.max(1, PHOTONS_PER_UNIT * k * signal);
-    noiseSigma = Math.min(MAX_NOISE_SIGMA, Math.max(level, MIN_NOISE_LEVEL) / Math.sqrt(photons));
+    // Sky photon noise against the target's bright core (the display level is set
+    // by its peak), both on the same photometric scale: sky photons per core photon.
+    const kCore = k * 10 ** (0.4 * coreConcentrationMag);
+    const kSkyPhotons = skyMag === undefined ? 0 : CAMERA_SENSITIVITY[category] * relativeSurfaceFactor(category, skyMag);
+    const skyNoise = Math.sqrt(1 + kSkyPhotons / Math.max(kCore, 1e-12));
+    noiseSigma = Math.min(MAX_NOISE_SIGMA, (Math.max(level, MIN_NOISE_LEVEL) / Math.sqrt(photons)) * skyNoise);
   }
 
   return {
@@ -190,6 +235,7 @@ export function computeCameraLayout(
     blurPx: Math.min(MAX_BLUR_PX, resolutionArcsec * renderPxPerArcsec * FWHM_TO_SIGMA),
     level,
     noiseSigma,
+    skyLevel,
   };
 }
 

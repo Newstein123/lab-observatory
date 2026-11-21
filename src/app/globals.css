@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Screens big enough for the simulator to fill the window without scrolling. */
+@custom-variant fill (@media (min-width: 1280px) and (min-height: 800px));
+
 /*
  * Universal Observatory — instrument-control palette.
  * Deep navy surfaces in layers, one restrained indigo accent, and a colour per

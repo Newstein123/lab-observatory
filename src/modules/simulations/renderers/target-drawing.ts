@@ -1,5 +1,7 @@
 import type { CuratedTarget } from "@/modules/targets/catalogue";
 import type { ReferenceImage } from "@/modules/targets/reference-images";
+import type { ViewPhase } from "./atmosphere";
+import { drawPhased } from "./phase-mask";
 import { drawTargetSchematic } from "./schematics";
 
 /** A reference image that has finished loading, with its provenance. */
@@ -13,6 +15,15 @@ export interface TargetDrawOptions {
   reference?: LoadedReference;
   /** How the image combines with what is already drawn. Default "screen". */
   blend?: GlobalCompositeOperation;
+  /** Moon or planet phase: only the lit part is drawn. */
+  phase?: ViewPhase;
+  /**
+   * Turn the body (its photo or drawing has north up) so its north pole points
+   * this many degrees counter-clockwise from screen-up: the pole's position
+   * angle when the view has celestial north up and east left. The phase is
+   * already in sky terms and is not turned with it.
+   */
+  rotationDeg?: number;
 }
 
 /**
@@ -26,14 +37,24 @@ export function drawTarget(
   target: CuratedTarget,
   majorPx: number,
   minorPx: number,
-  { color, reference, blend = "screen" }: TargetDrawOptions,
+  { color, reference, blend = "screen", phase, rotationDeg }: TargetDrawOptions,
 ): void {
+  if (phase && phase.illuminated < 0.995 && (target.category === "moon" || target.category === "planet")) {
+    drawPhased(ctx, Math.max(majorPx / 2, 0.75), phase, (c) => drawTarget(c, target, majorPx, minorPx, { color, reference, blend: "source-over", rotationDeg }), blend);
+    return;
+  }
+  // Canvas angles run clockwise (y down); position angles counter-clockwise here.
+  const turn = rotationDeg ? (-rotationDeg * Math.PI) / 180 : 0;
   if (!reference) {
+    ctx.save();
+    if (turn) ctx.rotate(turn);
     drawTargetSchematic(ctx, target, majorPx, minorPx, { color });
+    ctx.restore();
     return;
   }
   const { image, meta } = reference;
   ctx.save();
+  if (turn) ctx.rotate(turn);
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
   // Light adds to the sky background: "screen" makes the image's black

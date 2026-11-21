@@ -13,8 +13,6 @@ cd "$(dirname "$0")/.."
 PORT="${PORT:-3000}"
 PID_FILE=".dev-server.pid"
 TUNNEL="${TUNNEL:-cloudflared}"
-TUNNEL_PID_FILE=".tunnel.pid"
-TUNNEL_LOG=".tunnel.log"
 PUBLIC_URL=""
 
 log() { printf '\033[1;34m▸ %s\033[0m\n' "$*"; }
@@ -53,12 +51,8 @@ cleanup() {
   [ -n "${DEV_PID:-}" ] && kill "$DEV_PID" 2>/dev/null || true
   wait "${DEV_PID:-}" 2>/dev/null || true
   rm -f "$PID_FILE"
-  if [ -n "${TUNNEL_PID:-}" ]; then
-    log "Closing the tunnel…"
-    kill "$TUNNEL_PID" 2>/dev/null || true
-    wait "$TUNNEL_PID" 2>/dev/null || true
-  fi
-  rm -f "$TUNNEL_PID_FILE"
+  [ -n "${WATCH_PID:-}" ] && kill "$WATCH_PID" 2>/dev/null || true
+  ./scripts/tunnel.sh stop >/dev/null 2>&1 || true
   log "Stopping Supabase…"
   pnpm exec supabase stop >/dev/null 2>&1 || true
   log "Stopped."
@@ -69,50 +63,43 @@ trap 'exit 0' INT TERM
 
 # 4. Public HTTPS tunnel, so a phone can open the app (AR needs HTTPS).
 #    Started before the app; it connects as soon as the app is listening.
-start_tunnel() {
-  case "$TUNNEL" in
-    0 | off | none | false) return 0 ;;
-    cloudflared)
-      command -v cloudflared >/dev/null 2>&1 || { warn "cloudflared not found (brew install cloudflared); continuing without a tunnel."; return 0; }
-      log "Opening a Cloudflare tunnel…"
-      cloudflared tunnel --no-autoupdate --url "http://localhost:$PORT" >"$TUNNEL_LOG" 2>&1 &
-      TUNNEL_PID=$!
-      for _ in $(seq 1 60); do
-        PUBLIC_URL="$(grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' "$TUNNEL_LOG" 2>/dev/null | head -1 || true)"
-        [ -n "$PUBLIC_URL" ] && break
-        kill -0 "$TUNNEL_PID" 2>/dev/null || break
-        sleep 0.5
-      done
-      ;;
-    ngrok)
-      command -v ngrok >/dev/null 2>&1 || { warn "ngrok not found (brew install ngrok); continuing without a tunnel."; return 0; }
-      log "Opening an ngrok tunnel…"
-      ngrok http "$PORT" --log stdout >"$TUNNEL_LOG" 2>&1 &
-      TUNNEL_PID=$!
-      for _ in $(seq 1 60); do
-        PUBLIC_URL="$(curl -s http://127.0.0.1:4040/api/tunnels 2>/dev/null | grep -oE '"public_url":"https://[^"]+"' | head -1 | cut -d'"' -f4 || true)"
-        [ -n "$PUBLIC_URL" ] && break
-        kill -0 "$TUNNEL_PID" 2>/dev/null || break
-        sleep 0.5
-      done
-      ;;
-    *) warn "Unknown TUNNEL=$TUNNEL (use cloudflared, ngrok or 0); continuing without a tunnel."; return 0 ;;
-  esac
-  if [ -z "$PUBLIC_URL" ]; then
-    warn "The tunnel did not come up (details in $TUNNEL_LOG); continuing on localhost only."
-    kill "$TUNNEL_PID" 2>/dev/null || true
-    TUNNEL_PID=""
-    return 0
-  fi
-  echo "$TUNNEL_PID" >"$TUNNEL_PID_FILE"
-}
-start_tunnel
+case "$TUNNEL" in
+  0 | off | none | false) ;;
+  *)
+    if PORT="$PORT" TUNNEL="$TUNNEL" ./scripts/tunnel.sh restart; then
+      PUBLIC_URL="$(cat .tunnel.url 2>/dev/null || true)"
+    else
+      warn "Continuing on localhost only."
+    fi
+    ;;
+esac
 
+# Keep the tunnel alive: quick tunnels can drop (a network change, the computer
+# sleeping) and never come back. Check every minute and reopen it if it is gone.
+# The app reads the current address itself, so the phone QR code follows.
+watch_tunnel() {
+  local fails=0 url pid code
+  while sleep 60; do
+    url="$(cat .tunnel.url 2>/dev/null || true)"
+    pid="$(cat .tunnel.pid 2>/dev/null || true)"
+    # Any answer from the app counts as alive; no answer (000) or Cloudflare's
+    # own "tunnel not found" errors (502, 530 / error 1033) mean it is dead.
+    code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "$url" 2>/dev/null || true)"
+    if [ -n "$url" ] && [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null && [ -n "$code" ] && [ "$code" != 000 ] && [ "$code" != 502 ] && [ "$code" != 530 ]; then
+      fails=0
+      continue
+    fi
+    fails=$((fails + 1))
+    if [ "$fails" -ge 2 ]; then
+      warn "The tunnel dropped; opening a new one…"
+      PORT="$PORT" TUNNEL="$TUNNEL" ./scripts/tunnel.sh restart || true
+      fails=0
+    fi
+  done
+}
 if [ -n "$PUBLIC_URL" ]; then
-  printf '\n\033[1;32m  On your phone, open:  %s\033[0m\n' "$PUBLIC_URL"
-  # Scannable from the terminal.
-  node -e "require('qrcode').toString(process.argv[1], { type: 'terminal', small: true }).then((s) => console.log(s))" "$PUBLIC_URL" 2>/dev/null || true
-  printf '  Anyone with this address can open this dev server while it runs. Start with TUNNEL=0 to keep it local.\n\n'
+  watch_tunnel &
+  WATCH_PID=$!
 fi
 
 log "Starting the app on http://localhost:$PORT  (Ctrl+C to stop everything)"

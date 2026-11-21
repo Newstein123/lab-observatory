@@ -31,6 +31,14 @@ export interface SessionViewSettings {
   zoom: number;
   /** When the view is set (ISO 8601): places moving things such as Jupiter's moons. */
   observedAt?: string;
+  /** Where it was observed from (coordinates rounded to 0.1°). */
+  site?: { name: string; latDeg: number; lonDeg: number; timeZone?: string };
+  /** Where the conditions came from. */
+  conditionsSource?: "live" | "manual" | "ideal";
+  /** What made the sky bright (sets the drawn sky colour). */
+  skySource?: "natural" | "light pollution" | "moonlight" | "twilight";
+  /** Cloud cover 0…1 as drawn. */
+  cloud?: number;
 }
 
 export interface NewSession {
@@ -142,7 +150,18 @@ export const simulationSessionSchema = z.object({
   targetSnapshot: z.object({ id: z.string(), name: z.string() }).passthrough(),
   conditions: observingConditionsSchema,
   exposure: exposureSettingsSchema.optional(),
-  view: z.object({ focusOffset: z.number(), longExposureColor: z.boolean(), zoom: z.number(), observedAt: z.string().datetime().optional() }),
+  view: z.object({
+    focusOffset: z.number(),
+    longExposureColor: z.boolean(),
+    zoom: z.number(),
+    observedAt: z.string().datetime().optional(),
+    site: z
+      .object({ name: z.string().max(120), latDeg: z.number().min(-90).max(90), lonDeg: z.number().min(-180).max(180), timeZone: z.string().max(64).optional() })
+      .optional(),
+    conditionsSource: z.enum(["live", "manual", "ideal"]).optional(),
+    skySource: z.enum(["natural", "light pollution", "moonlight", "twilight"]).optional(),
+    cloud: z.number().min(0).max(1).optional(),
+  }),
   configurationRef: z.object({ id: z.string(), version: z.number(), modified: z.boolean() }).optional(),
   configurationSnapshot: configurationSpecSchema,
   engineVersion: z.string(),

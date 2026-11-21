@@ -200,6 +200,12 @@ isOneToOne: false
 "is_valid_component":
 { Args: { "component_type": string,"spec": Json }; Returns: boolean
                            },
+"is_valid_conditions":
+{ Args: { "c": Json }; Returns: boolean
+                           },
+"is_valid_view_site":
+{ Args: { "v": Json }; Returns: boolean
+                           },
 "json_number_between":
 { Args: { "hi": number,"key": string,"lo": number,"s": Json }; Returns: boolean
                            },

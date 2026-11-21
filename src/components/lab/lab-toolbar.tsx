@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Button, buttonStyles } from "@/components/ui/button";
+import { Icons } from "@/components/ui/icons";
 import { StatusChip } from "@/components/ui/status-chip";
 import { canPersist, signInHref, useAuth } from "@/modules/auth/use-auth";
 import { isDraftDirty, markDraftSaved, type LabDraft } from "@/modules/lab/draft";
@@ -15,14 +16,18 @@ interface Props {
   valid: boolean;
   /** Provided on pages that can save a simulation session. */
   onSaveSession?: () => Promise<SimulationSession>;
+  /** Why saving a simulation must wait (e.g. live weather still loading). */
+  sessionWait?: string;
   /** Extra actions, e.g. navigation to the next step. */
   actions?: React.ReactNode;
+  /** A picture before the name (e.g. the current target). */
+  leading?: React.ReactNode;
 }
 
 type Feedback = { tone: "ok" | "error"; text: string; href?: string; linkText?: string };
 
 /** Name, save state and save actions for the configuration being edited. */
-export function LabToolbar({ draft, valid, onSaveSession, actions }: Props) {
+export function LabToolbar({ draft, valid, onSaveSession, sessionWait, actions, leading }: Props) {
   const auth = useAuth();
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState<Feedback>();
@@ -67,17 +72,20 @@ export function LabToolbar({ draft, valid, onSaveSession, actions }: Props) {
   const state = !saved ? "Not saved" : dirty ? "Unsaved changes" : `Saved · v${saved.version}`;
 
   return (
-    <div className="glass rounded-xl px-4 py-3">
+    <div className="glass rounded-2xl px-4 py-3">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <div className="w-full min-w-0 sm:w-auto sm:flex-1">
-          <div className="flex items-center gap-2">
-            <span className="truncate font-medium">{config.name || "Untitled configuration"}</span>
-            <StatusChip status={config.status} />
+        <div className="flex w-full min-w-0 items-center gap-3 sm:w-auto sm:flex-1">
+          {leading}
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="truncate text-lg font-semibold tracking-tight">{config.name || "Untitled configuration"}</span>
+              <StatusChip status={config.status} />
+            </div>
+            <p className={`text-xs ${dirty ? "text-warning" : "text-muted"}`}>
+              {state}
+              {!config.profileId && " · Hypothetical (not linked to your equipment)"}
+            </p>
           </div>
-          <p className={`text-xs ${dirty ? "text-warning" : "text-muted"}`}>
-            {state}
-            {!config.profileId && " · Hypothetical (not linked to your equipment)"}
-          </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {!canPersist(auth) ? (
@@ -89,11 +97,13 @@ export function LabToolbar({ draft, valid, onSaveSession, actions }: Props) {
           ) : (
             <>
               <Button
-                variant={saved && !dirty ? "secondary" : "primary"}
+                // On the simulate page the simulation is the main thing to save.
+                variant={saved && !dirty ? "secondary" : onSaveSession ? "secondary" : "primary"}
                 size="sm"
                 disabled={busy || !valid || (Boolean(saved) && !dirty)}
                 onClick={save}
               >
+                {saved && !dirty ? <Icons.Check className="size-4" /> : <Icons.Bookmark className="size-4" />}
                 {!saved ? "Save configuration" : dirty ? "Save changes" : "Saved"}
               </Button>
               {saved && (
@@ -102,7 +112,8 @@ export function LabToolbar({ draft, valid, onSaveSession, actions }: Props) {
                 </Button>
               )}
               {onSaveSession && (
-                <Button size="sm" disabled={busy || !valid} onClick={saveSession}>
+                <Button variant="primary" size="sm" disabled={busy || !valid || Boolean(sessionWait)} title={sessionWait} onClick={saveSession}>
+                  <Icons.Play className="size-4" />
                   Save simulation
                 </Button>
               )}

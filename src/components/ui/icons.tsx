@@ -147,4 +147,142 @@ export const Icons = {
       <path d="M20 4v4h-4" />
     </Svg>
   ),
+  ChevronDown: (p: IconProps) => (
+    <Svg {...p}>
+      <path d="M6 9l6 6 6-6" />
+    </Svg>
+  ),
+  Arrow: (p: IconProps) => (
+    <Svg {...p}>
+      <path d="M5 12h14M13 6l6 6-6 6" />
+    </Svg>
+  ),
+  Eye: (p: IconProps) => (
+    <Svg {...p}>
+      <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" />
+      <circle cx="12" cy="12" r="3" />
+    </Svg>
+  ),
+  Sun: (p: IconProps) => (
+    <Svg {...p}>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4" />
+    </Svg>
+  ),
+  Moon: (p: IconProps) => (
+    <Svg {...p}>
+      <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" />
+    </Svg>
+  ),
+  Star: (p: IconProps) => (
+    <Svg {...p}>
+      <path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z" />
+    </Svg>
+  ),
+  Galaxy: (p: IconProps) => (
+    <Svg {...p}>
+      <path d="M12 12c0-3 2.5-5 5.5-4.5M12 12c3 0 5 2.5 4.5 5.5M12 12c0 3-2.5 5-5.5 4.5M12 12c-3 0-5-2.5-4.5-5.5" />
+      <circle cx="12" cy="12" r="1.3" />
+    </Svg>
+  ),
+  Nebula: (p: IconProps) => (
+    <Svg {...p}>
+      <path d="M6 15a4 4 0 0 1 1-7.8A5 5 0 0 1 16.6 8 3.5 3.5 0 0 1 18 15z" />
+      <path d="M8 19h8M10 22h4" />
+    </Svg>
+  ),
+  Sparkles: (p: IconProps) => (
+    <Svg {...p}>
+      <path d="M10 3l1.6 4.4L16 9l-4.4 1.6L10 15l-1.6-4.4L4 9l4.4-1.6z" />
+      <path d="M18 14l.8 2.2L21 17l-2.2.8L18 20l-.8-2.2L15 17l2.2-.8z" />
+    </Svg>
+  ),
+  Pin: (p: IconProps) => (
+    <Svg {...p}>
+      <path d="M12 21s-6.5-6-6.5-11a6.5 6.5 0 0 1 13 0c0 5-6.5 11-6.5 11z" />
+      <circle cx="12" cy="10" r="2.3" />
+    </Svg>
+  ),
+  Locate: (p: IconProps) => (
+    <Svg {...p}>
+      <path d="M3.5 11L20.5 3.5 13 20.5l-2-7.5z" />
+    </Svg>
+  ),
+  Calendar: (p: IconProps) => (
+    <Svg {...p}>
+      <rect x="4" y="5" width="16" height="15" rx="2" />
+      <path d="M4 10h16M8.5 3v4M15.5 3v4" />
+    </Svg>
+  ),
+  Chart: (p: IconProps) => (
+    <Svg {...p}>
+      <path d="M5 20V11M10 20V5M15 20v-7M20 20V8" />
+    </Svg>
+  ),
+  Cone: (p: IconProps) => (
+    <Svg {...p}>
+      <path d="M12 3L5 19M12 3l7 16" />
+      <ellipse cx="12" cy="19" rx="7" ry="2" />
+    </Svg>
+  ),
+  Aperture: (p: IconProps) => (
+    <Svg {...p}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M14.3 3.3L9 12.4M20.4 9.4L9.6 9.2M17.9 18.4l-5.4-9.1M9.7 20.7l5.3-9.1M3.6 14.6l10.8.2M6.1 5.6l5.4 9.1" />
+    </Svg>
+  ),
+  Crosshair: (p: IconProps) => (
+    <Svg {...p}>
+      <circle cx="12" cy="12" r="7.5" />
+      <path d="M12 2v5M12 17v5M2 12h5M17 12h5" />
+    </Svg>
+  ),
+  Download: (p: IconProps) => (
+    <Svg {...p}>
+      <path d="M12 4v11M7 10.5l5 5 5-5" />
+      <path d="M4.5 19.5h15" />
+    </Svg>
+  ),
+  Expand: (p: IconProps) => (
+    <Svg {...p}>
+      <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />
+    </Svg>
+  ),
+  Gear: (p: IconProps) => (
+    <Svg {...p}>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
+    </Svg>
+  ),
+  Sliders: (p: IconProps) => (
+    <Svg {...p}>
+      <path d="M4 7h10M18 7h2M4 17h4M12 17h8" />
+      <circle cx="16" cy="7" r="2" />
+      <circle cx="10" cy="17" r="2" />
+    </Svg>
+  ),
+  Check: (p: IconProps) => (
+    <Svg {...p}>
+      <path d="M5 12.5l4.5 4.5L19 7.5" />
+    </Svg>
+  ),
+  Info: (p: IconProps) => (
+    <Svg {...p}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 11v5M12 7.5v.5" />
+    </Svg>
+  ),
+  Warning: (p: IconProps) => (
+    <Svg {...p}>
+      <path d="M12 4L2.5 20h19z" />
+      <path d="M12 10v4.5M12 17.5v.5" />
+    </Svg>
+  ),
+  Image: (p: IconProps) => (
+    <Svg {...p}>
+      <rect x="3.5" y="4.5" width="17" height="15" rx="2" />
+      <circle cx="9" cy="10" r="1.6" />
+      <path d="M20.5 16l-5-5-9 8.5" />
+    </Svg>
+  ),
 };

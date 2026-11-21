@@ -55,3 +55,4 @@ next-env.d.ts
 /.dev-server.pid
 /.tunnel.pid
 /.tunnel.log
+/.tunnel.url

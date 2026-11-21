@@ -22,3 +22,10 @@ export async function signUpFreshUser(page: Page): Promise<string | undefined> {
   await expect(page).toHaveURL(/\/observatory/);
   return email;
 }
+
+/** A group of configuration fields (Telescope, Eyepiece…), opening "Edit values" first if it is collapsed. */
+export async function fieldGroup(page: Page, name: string) {
+  const toggle = page.getByRole("button", { name: /^Edit values/ });
+  if ((await toggle.getAttribute("aria-expanded")) === "false") await toggle.click();
+  return page.getByRole("group", { name, exact: true });
+}

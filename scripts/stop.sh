@@ -17,14 +17,7 @@ if [ -f "$PID_FILE" ]; then
   rm -f "$PID_FILE"
 fi
 
-if [ -f .tunnel.pid ]; then
-  tpid="$(cat .tunnel.pid)"
-  if kill -0 "$tpid" 2>/dev/null; then
-    log "Closing the tunnel (PID $tpid)…"
-    kill "$tpid" 2>/dev/null
-  fi
-  rm -f .tunnel.pid
-fi
+./scripts/tunnel.sh stop
 
 if docker info >/dev/null 2>&1; then
   log "Stopping Supabase…"

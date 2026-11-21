@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AccountMenu } from "@/components/auth/account-menu";
 import { Icons } from "@/components/ui/icons";
+import { TargetSearch } from "@/components/target-search";
 
 const NAV = [
   { href: "/lab", label: "Telescope Lab", icon: Icons.Telescope },
@@ -20,22 +21,21 @@ export function SiteHeader() {
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-border/80 bg-background/75 backdrop-blur-md">
-        <div className="mx-auto flex h-14 max-w-[1500px] items-center gap-6 px-4">
+        <div className="mx-auto flex h-16 max-w-[1680px] items-center gap-8 px-4">
           <Link href="/" className="flex items-center gap-2.5 font-semibold tracking-tight">
             <Icons.Logo className="size-7" />
-            <span>Universal Observatory</span>
+            <span className="text-[17px]">Universal Observatory</span>
           </Link>
-          <nav aria-label="Main" className="hidden items-center text-sm md:flex">
-            {NAV.map((item, i) => {
+          <nav aria-label="Main" className="hidden items-center gap-1 text-sm md:flex">
+            {NAV.map((item) => {
               const active = isActive(pathname, item.href);
               return (
                 <div key={item.href} className="flex items-center">
-                  {i > 0 && <span aria-hidden className="mx-1 h-4 w-px bg-border-strong" />}
                   <Link
                     href={item.href}
                     aria-current={active ? "page" : undefined}
-                    className={`rounded-md px-3 py-1.5 transition-colors ${
-                      active ? "bg-surface-raised text-foreground" : "text-muted hover:text-foreground"
+                    className={`rounded-lg px-3.5 py-1.5 transition-colors ${
+                      active ? "bg-accent-strong font-medium text-accent-foreground shadow-glow" : "text-muted hover:bg-surface-raised/70 hover:text-foreground"
                     }`}
                   >
                     {item.label}
@@ -44,8 +44,10 @@ export function SiteHeader() {
               );
             })}
           </nav>
-          <p className="ml-auto hidden text-sm italic text-muted xl:block">Configure. Simulate. Preserve.</p>
-          <div className="ml-auto xl:ml-4">
+          <div className="ml-auto hidden w-80 md:block lg:w-96">
+            <TargetSearch />
+          </div>
+          <div className="ml-auto md:ml-2">
             <AccountMenu />
           </div>
         </div>

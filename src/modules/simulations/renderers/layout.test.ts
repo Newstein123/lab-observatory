@@ -33,6 +33,22 @@ describe("eyepiece layout", () => {
     const galaxy = computeEyepieceLayout(eyepiece(), 500, { category: "galaxy", focusOffset: 0 });
     expect(galaxy.brightness).toBeLessThan(moon.brightness);
   });
+
+  it("the Moon stays plainly visible at high power, dimming as magnification rises", () => {
+    const at = (eyepieceMm: number) =>
+      computeEyepieceLayout(simulate({ ...base, eyepiece: { focalLengthMm: eyepieceMm, apparentFovDeg: 82 }, mode: "eyepiece", target: { id: "moon", majorAxisArcsec: 1866, minorAxisArcsec: 1866 } }) as EyepieceResult, 500, {
+        category: "moon",
+        focusOffset: 0,
+        surfaceBrightness: 3.4,
+      }).brightness;
+    // 40× (5 mm exit pupil), 200× (1 mm), 667× (0.3 mm).
+    const low = at(25);
+    const mid = at(5);
+    const high = at(1.5);
+    expect(low).toBeGreaterThan(mid);
+    expect(mid).toBeGreaterThan(high);
+    expect(high).toBeGreaterThan(0.5);
+  });
 });
 
 describe("camera layout", () => {
@@ -60,6 +76,19 @@ describe("camera layout", () => {
     const g4 = computeCameraLayout(cameraRun({ exposure: { exposureS: 2, gain: 4 } }), 600, { category: "nebula", zoom: 1, gain: 4, exposureS: 2 });
     expect(g4.level).toBeGreaterThan(g1.level);
     expect(g4.noiseSigma / g4.level).toBeCloseTo(g1.noiseSigma / g1.level, 6);
+  });
+
+  it("a dark sky leaves a black background after a long exposure; a city sky leaves glow", () => {
+    const run = cameraRun({ exposure: { exposureS: 120, gain: 1 } });
+    const opts = { category: "galaxy" as const, zoom: 1, gain: 1, exposureS: 120 };
+    const dark = computeCameraLayout(run, 600, { ...opts, skyMag: 21.9 });
+    const suburb = computeCameraLayout(run, 600, { ...opts, skyMag: 20.3 });
+    const city = computeCameraLayout(run, 600, { ...opts, skyMag: 16.5 });
+    expect(dark.skyLevel).toBeLessThan(0.01);
+    expect(suburb.skyLevel).toBeGreaterThan(dark.skyLevel);
+    expect(city.skyLevel).toBeGreaterThan(0.2);
+    // The sky's photon noise remains even when its glow is subtracted.
+    expect(city.noiseSigma).toBeGreaterThan(dark.noiseSigma);
   });
 });
 

@@ -53,7 +53,9 @@ test("full journey: Lab → configure → simulate → compare → save → My O
   await expect(page).toHaveURL(/\/lab\/compare/);
   const comparison = page.getByRole("region", { name: "Comparison" });
   await expect(comparison.getByText("Image scale")).toBeVisible();
-  await page.getByRole("combobox", { name: "Configuration B" }).selectOption({ label: "Example: Sky-Watcher Evostar 80ED" });
+  await page.getByRole("button", { name: /^Configuration B: .*Change/ }).click();
+  await page.getByLabel("Search equipment").fill("Evostar 80ED");
+  await page.getByRole("dialog", { name: "Choose configuration b" }).getByRole("button", { name: /^Sky-Watcher Evostar 80ED/ }).click();
   await expect(comparison.getByRole("row", { name: /Aperture/ })).toContainText("203 mm");
   await expect(comparison.getByRole("row", { name: /Aperture/ })).toContainText("80 mm");
   await page.getByRole("button", { name: "Save configuration B" }).click();

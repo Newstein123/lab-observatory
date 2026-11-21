@@ -71,8 +71,18 @@ export interface TargetExtent {
 }
 
 export interface ObservingConditions {
-  /** Atmospheric seeing, FWHM in arcseconds. */
+  /** Atmospheric seeing at the zenith, FWHM in arcseconds. */
   seeingArcsec?: number;
+  /** Sky brightness towards the target (light pollution, moonlight, twilight), V mag/arcsec². */
+  skyBrightnessMagArcsec2?: number;
+  /** Dimming by the atmosphere along the line of sight, magnitudes. */
+  extinctionMag?: number;
+  /** Air mass towards the target (1 at the zenith). Scales seeing. */
+  airmass?: number;
+  /** Fraction of light let through by cloud, 0…1. */
+  cloudTransmission?: number;
+  /** Target altitude, degrees (apparent). Negative: below the horizon. */
+  targetAltitudeDeg?: number;
 }
 
 export interface ExposureSettings {
@@ -118,7 +128,12 @@ export type AssumptionId =
   | "target_extent_fixed"
   | "filter_transmission_typical"
   | "sidereal_drift_rate"
-  | "declination_unknown_equator";
+  | "declination_unknown_equator"
+  | "sky_limited_magnitude"
+  | "sky_brightness_estimated"
+  | "extinction_airmass"
+  | "seeing_airmass"
+  | "cloud_transmission";
 
 export interface CommonMetrics {
   effectiveFocalLength: Metric;
@@ -130,6 +145,14 @@ export interface CommonMetrics {
   limitingMagnitude: Metric;
   /** Fraction of the target's light a filter passes (typical value). */
   filterTransmission?: Metric;
+  /** Sky brightness towards the target, mag/arcsec². */
+  skyBrightness?: Metric;
+  /** Atmospheric dimming of the target, mag. */
+  extinction?: Metric;
+  airmass?: Metric;
+  /** Seeing along the line of sight (zenith seeing × air mass^0.6). */
+  effectiveSeeing?: Metric;
+  cloudTransmission?: Metric;
 }
 
 export interface EyepieceMetrics extends CommonMetrics {
@@ -138,6 +161,8 @@ export interface EyepieceMetrics extends CommonMetrics {
   trueFov: Metric;
   maxUsefulMagnification: Metric;
   surfaceBrightnessVsEye: Metric;
+  /** Sky background as it reaches the eye through the eyepiece, mag/arcsec². */
+  skyBackgroundAtEye?: Metric;
 }
 
 export interface CameraMetrics extends CommonMetrics {
@@ -161,7 +186,11 @@ export type WarningCode =
   | "seeing_limited"
   | "undersampled"
   | "oversampled"
-  | "untracked_trailing";
+  | "untracked_trailing"
+  | "below_horizon"
+  | "low_altitude"
+  | "bright_sky"
+  | "cloudy";
 
 export interface SimulationWarning {
   code: WarningCode;
