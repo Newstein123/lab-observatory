@@ -9,6 +9,7 @@ import { TargetSearch } from "@/components/target-search";
 const NAV = [
   { href: "/lab", label: "Telescope Lab", icon: Icons.Telescope },
   { href: "/observatory", label: "My Observatory", icon: Icons.Home },
+  { href: "/discoveries", label: "Discoveries", icon: Icons.Bookmark },
 ];
 
 function isActive(pathname: string, href: string) {
@@ -55,7 +56,7 @@ export function SiteHeader() {
 
       <nav
         aria-label="Main"
-        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-2 border-t border-border bg-background/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-3 border-t border-border bg-background/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden"
       >
         {NAV.map((item) => {
           const active = isActive(pathname, item.href);

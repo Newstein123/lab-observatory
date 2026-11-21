@@ -46,23 +46,52 @@ import { compass, toHorizontal } from "@/modules/sky/coords";
 import { altitudeFn, crossings, HORIZON_MOON, HORIZON_STAR, highest, nightInfo } from "@/modules/sky/events";
 import { NATURAL_SKY } from "@/modules/sky/sky-brightness";
 import { updateSkyPrefs, useSkyContext } from "@/modules/sky/use-sky-setting";
+import { moonPosition } from "@/modules/sky/moon";
+import { surfaceGeometry } from "@/modules/explorer/projection";
+import { useGrsMeasurement } from "@/modules/explorer/use-grs-measurement";
+import { isPlanet, planetPosition } from "@/modules/sky/planets";
+import { AU_KM } from "@/modules/sky/math";
+import { explorerObjectFor } from "@/modules/explorer/objects";
+import type { ExplorerSelection, ExplorerTab } from "@/modules/explorer/types";
+import { selectionKey, type ExplorerContext } from "@/components/explorer/explorer-context";
+import { ExploreStrip } from "@/components/explorer/explore-strip";
+import { ObjectExplorerPanel } from "@/components/explorer/object-explorer-panel";
+import { ObservationToolbar } from "@/components/explorer/observation-toolbar";
+import { DiscoveriesButton } from "@/components/explorer/discoveries-button";
+import { selectionName } from "@/components/explorer/explorer-context";
+import { findDiscovery, useDiscoveries, useDiscoveryActions } from "@/modules/discoveries/use-discoveries";
+import { recordExplored } from "@/modules/discoveries/history";
 
 type Outcome = { result: SimulationResult; errors?: undefined } | { result?: undefined; errors: FieldErrors };
 
-/** Reflect target, mode and saved configuration in the URL so the view can be linked to. */
-function syncUrl(targetId: string, mode: SimulationMode, configId?: string) {
+/** Reflect target, mode, saved configuration and pinned feature in the URL so the view can be linked to. */
+function syncUrl(targetId: string, mode: SimulationMode, configId?: string, pinned?: ExplorerSelection) {
   const params = new URLSearchParams({ target: targetId, mode });
   if (configId) params.set("config", configId);
+  if (pinned && pinned.kind !== "object") params.set("feature", pinned.id);
   window.history.replaceState(null, "", `?${params}`);
+}
+
+/** A `feature` URL value as a selection on this target (a surface feature or a companion). */
+function selectionFromUrl(targetId: string | undefined, id: string | undefined): ExplorerSelection | undefined {
+  const t = getTarget(targetId ?? "");
+  if (!t || !id) return undefined;
+  const o = explorerObjectFor(t);
+  if (o.features.some((f) => f.id === id)) return { kind: "feature", id };
+  if (o.companions.some((c) => c.id === id)) return { kind: "companion", id };
+  if (o.rings.some((r) => r.id === id)) return { kind: "ring", id };
+  return undefined;
 }
 
 interface Props {
   initialTargetId?: string;
   initialMode?: SimulationMode;
   initialConfigId?: string;
+  /** A pinned feature or moon (`feature` in the URL). */
+  initialFeatureId?: string;
 }
 
-export function LabWorkspace({ initialTargetId, initialMode = "eyepiece", initialConfigId }: Props) {
+export function LabWorkspace({ initialTargetId, initialMode = "eyepiece", initialConfigId, initialFeatureId }: Props) {
   const { draft, status } = useWorkingDraft(initialConfigId);
   if (!draft) {
     return (
@@ -80,6 +109,7 @@ export function LabWorkspace({ initialTargetId, initialMode = "eyepiece", initia
       loadError={status === "error"}
       initialTargetId={initialTargetId}
       initialMode={initialMode}
+      initialFeatureId={initialFeatureId}
     />
   );
 }
@@ -91,6 +121,7 @@ function Workspace({
   loadError,
   initialTargetId,
   initialMode,
+  initialFeatureId,
 }: {
   config: ConfigurationSpec;
   draft: NonNullable<ReturnType<typeof useWorkingDraft>["draft"]>;
@@ -98,6 +129,7 @@ function Workspace({
   loadError: boolean;
   initialTargetId?: string;
   initialMode: SimulationMode;
+  initialFeatureId?: string;
 }) {
   const [target, setTarget] = useState<CuratedTarget>(() => getTarget(initialTargetId ?? "") ?? getTarget("saturn")!);
   const [mode, setModeState] = useState<SimulationMode>(initialMode);
@@ -113,6 +145,12 @@ function Workspace({
   // The telescope nudged off the target (arcsec); Centre puts it back.
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [snapshotOpen, setSnapshotOpen] = useState(false);
+  // --- Astronomical Object Explorer: what is selected, pinned and open ---
+  const [pinned, setPinned] = useState<ExplorerSelection | undefined>(() => selectionFromUrl(initialTargetId, initialFeatureId));
+  const [selected, setSelected] = useState<ExplorerSelection | undefined>(pinned);
+  const [explorerOpen, setExplorerOpen] = useState(Boolean(pinned));
+  const [identify, setIdentify] = useState(false);
+  const [tabRequest, setTabRequest] = useState<{ tab: ExplorerTab; n: number }>();
   // A new target in the URL (e.g. from the header search) replaces the current one.
   const [urlTarget, setUrlTarget] = useState(initialTargetId);
   if (initialTargetId !== urlTarget) {
@@ -121,17 +159,21 @@ function Workspace({
     if (t && t.id !== target.id) {
       setTarget(t);
       setExposureS(t.suggestedExposureS);
+      setSelected(undefined);
+      setPinned(undefined);
+      setExplorerOpen(false);
     }
   }
   const observedAt = sky.at.toISOString();
   const zoom = 2 ** zoomStep;
   const savedId = draft.saved?.id;
 
-  // Keep the URL pointing at the saved configuration once there is one.
+  // Keep the URL pointing at the saved configuration and the pinned feature.
+  const pinnedKey = selectionKey(pinned);
   useEffect(() => {
-    if (savedId) syncUrl(target.id, mode, savedId);
+    if (savedId || pinnedKey) syncUrl(target.id, mode, savedId, pinned);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [savedId]);
+  }, [savedId, pinnedKey]);
 
   // --- The sky at this place and time ---
   const evaluation = useMemo(() => evaluateSky(sky.setting, target), [sky.setting, target]);
@@ -236,21 +278,127 @@ function Workspace({
   const shown = outcome.result ?? lastValid;
   const errors = outcome.errors ?? {};
 
+  const siteLatLon = useMemo(() => ({ latDeg: sky.site.latDeg, lonDeg: sky.site.lonDeg }), [sky.site.latDeg, sky.site.lonDeg]);
   const settings: ViewSettings = useMemo(
-    () => ({ focusOffset, longExposureColor, zoom, gain, exposureS: exposureS ?? 0, filterKind: config.filter?.kind, observedAt, atmosphere, phase }),
-    [focusOffset, longExposureColor, zoom, gain, exposureS, config.filter?.kind, observedAt, atmosphere, phase],
+    () => ({ focusOffset, longExposureColor, zoom, gain, exposureS: exposureS ?? 0, filterKind: config.filter?.kind, observedAt, atmosphere, phase, site: siteLatLon }),
+    [focusOffset, longExposureColor, zoom, gain, exposureS, config.filter?.kind, observedAt, atmosphere, phase, siteLatLon],
   );
+
+  // --- Explorer: the object, where its features are relative to the field ---
+  const explorerObject = useMemo(() => explorerObjectFor(target), [target]);
+  const [grsMeasured, setGrsMeasured] = useGrsMeasurement();
+  const geometry = useMemo(() => surfaceGeometry(explorerObject, new Date(observedAt), siteLatLon, grsMeasured), [explorerObject, observedAt, siteLatLon, grsMeasured]);
+  const moonOrient = geometry?.moon;
+  const bodyDistanceKm = useMemo(() => {
+    if (target.id === "moon") return moonPosition(new Date(observedAt)).distanceKm;
+    if (isPlanet(target.id)) return planetPosition(target.id, new Date(observedAt)).distanceAu * AU_KM;
+    return undefined;
+  }, [target.id, observedAt]);
+  const bodyRadiusArcsec = shown ? shown.framing.targetMajorArcsec / 2 : 0;
+  const fieldRadiusArcsec = shown
+    ? shown.framing.shape === "circle"
+      ? shown.framing.fieldDiameterArcsec / 2
+      : Math.min(shown.framing.fieldWidthArcsec, shown.framing.fieldHeightArcsec) / 2 / zoom
+    : 0;
+  const { inField, lit } = useMemo(() => {
+    const inF = new Set<string>();
+    const litS = new Set<string>();
+    if (geometry?.project && bodyRadiusArcsec > 0) {
+      for (const f of explorerObject.features) {
+        const d = geometry.project(f);
+        if (d.sunDot > 0) litS.add(f.id);
+        if (d.z > 0 && Math.hypot(d.x * bodyRadiusArcsec + pan.x, d.y * bodyRadiusArcsec + pan.y) <= fieldRadiusArcsec) inF.add(f.id);
+      }
+    }
+    return { inField: inF as ReadonlySet<string>, lit: litS as ReadonlySet<string> };
+  }, [geometry, explorerObject, bodyRadiusArcsec, fieldRadiusArcsec, pan.x, pan.y]);
+
+  const select = (s: ExplorerSelection) => {
+    setSelected(s);
+    setExplorerOpen(true);
+  };
+  const togglePin = (s: ExplorerSelection | undefined) => {
+    if (!s) return;
+    const next = selectionKey(pinned) === selectionKey(s) ? undefined : s;
+    setPinned(next);
+    syncUrl(target.id, mode, savedId, next);
+  };
+  const centreOn = (featureId: string) => {
+    const f = explorerObject.features.find((x) => x.id === featureId);
+    if (!f || !geometry?.project) return;
+    const d = geometry.project(f);
+    setPan({ x: -d.x * bodyRadiusArcsec, y: -d.y * bodyRadiusArcsec });
+  };
+  const explorerSelection = selected ?? { kind: "object" as const };
+
+  // --- Discoveries: saved records and the local trail of what was explored ---
+  const discoveries = useDiscoveries();
+  const savedList = discoveries.status === "ready" ? discoveries.data : [];
+  const discoveryActions = useDiscoveryActions();
+  const selectionFeatureId = explorerSelection.kind === "object" ? undefined : explorerSelection.id;
+  const selectionLabel = selectionName({ object: explorerObject, selection: explorerSelection }) ?? explorerObject.name;
+  const savedHere = findDiscovery(savedList, { targetId: target.id, kind: explorerSelection.kind, featureId: selectionFeatureId });
+  useEffect(() => {
+    if (explorerOpen) recordExplored({ targetId: target.id, kind: explorerSelection.kind, featureId: selectionFeatureId, name: selectionLabel });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [explorerOpen, target.id, explorerSelection.kind, selectionFeatureId]);
+  const toggleSaved = () => {
+    if (savedHere) discoveryActions.remove(savedHere);
+    else
+      discoveryActions.save({
+        targetId: target.id,
+        kind: explorerSelection.kind,
+        ...(selectionFeatureId ? { featureId: selectionFeatureId } : {}),
+        name: selectionLabel,
+        observedAt,
+        siteName: sky.site.name.slice(0, 120),
+        setupSummary: summarizeConfiguration(config).slice(0, 200),
+      });
+  };
+  const explorerCtx: ExplorerContext | undefined = shown
+    ? {
+        object: explorerObject,
+        selection: explorerSelection,
+        observedAt: new Date(observedAt),
+        timeZone: sky.site.timeZone,
+        orientation: moonOrient,
+        geometry,
+        grs: { measured: grsMeasured, onChange: setGrsMeasured },
+        distanceKm: bodyDistanceKm,
+        setup: {
+          resolutionArcsec: shown.metrics.effectiveResolution?.value ?? shown.metrics.dawesLimit.value,
+          magnification: shown.mode === "eyepiece" ? shown.metrics.magnification?.value : undefined,
+          imageScaleArcsecPerPx: shown.mode === "camera" ? shown.metrics.imageScale?.value : undefined,
+          limitingMag: shown.metrics.limitingMagnitude.value,
+          label:
+            shown.mode === "eyepiece" && shown.metrics.magnification
+              ? `${config.telescope.apertureMm} mm at ${Math.round(shown.metrics.magnification.value)}×`
+              : `${config.telescope.apertureMm} mm with camera`,
+        },
+        field: bodyRadiusArcsec > 0 ? { x: -pan.x / bodyRadiusArcsec, y: -pan.y / bodyRadiusArcsec, r: fieldRadiusArcsec / bodyRadiusArcsec } : undefined,
+        inField,
+        pinned,
+        discovery: { saved: savedHere, canSave: discoveryActions.canSave, busy: discoveryActions.busy, onToggle: toggleSaved },
+        onSelect: select,
+        onPin: togglePin,
+        onCentre: centreOn,
+        onClose: () => setExplorerOpen(false),
+      }
+    : undefined;
 
   const chooseTarget = (t: CuratedTarget) => {
     setTarget(t);
     setPan({ x: 0, y: 0 });
     setExposureS(t.suggestedExposureS);
+    setSelected(undefined);
+    setPinned(undefined);
+    setExplorerOpen(false);
     syncUrl(t.id, mode, savedId);
   };
   const setMode = (m: SimulationMode) => {
     setModeState(m);
     setPan({ x: 0, y: 0 });
-    syncUrl(target.id, m, savedId);
+    syncUrl(target.id, m, savedId, pinned);
   };
 
   const saveSession = () =>
@@ -319,7 +467,11 @@ function Workspace({
         }
       />
 
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[300px_minmax(0,1fr)_380px] fill:min-h-0 fill:flex-1 fill:grid-rows-[minmax(0,1fr)]">
+      <div
+        className={`grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[300px_minmax(0,1fr)] ${
+          explorerOpen ? "xl:grid-cols-[280px_minmax(0,1fr)_minmax(400px,38%)]" : "xl:grid-cols-[300px_minmax(0,1fr)_380px]"
+        } fill:min-h-0 fill:flex-1 fill:grid-rows-[minmax(0,1fr)]`}
+      >
         <aside className="order-2 flex flex-col lg:order-1 fill:min-h-0 fill:overflow-y-auto fill:[scrollbar-width:thin] [&>section]:flex-1">
           <ConfigurationPanel
             config={config}
@@ -339,6 +491,21 @@ function Workspace({
             mode={mode}
             onModeChange={setMode}
             result={shown}
+            toolbar={
+              <ObservationToolbar
+                identify={identify}
+                onIdentifyChange={setIdentify}
+                canPin={Boolean(selected)}
+                pinned={Boolean(selected) && selectionKey(pinned) === selectionKey(selected)}
+                onPin={() => togglePin(selected)}
+                labels={view.layers.features}
+                onLabelsChange={(v) => view.setLayers({ features: v })}
+                labelsAvailable={explorerObject.features.length > 0 || explorerObject.rings.length > 0}
+                explorerOpen={explorerOpen}
+                onExplore={() => (explorerOpen ? setExplorerOpen(false) : select(selected ?? pinned ?? { kind: "object" }))}
+                discoveries={(cls) => <DiscoveriesButton targetId={target.id} targetName={target.name} saved={savedList} onOpen={select} className={cls} />}
+              />
+            }
             readout={mode === "eyepiece" ? <MagnificationPicker config={config} result={shown} /> : undefined}
             footer={
               mode === "eyepiece" ? (
@@ -422,6 +589,15 @@ function Workspace({
                 onPanChange={setPan}
                 layers={view.layers}
                 display={view.display}
+                explorer={{
+                  object: explorerObject,
+                  selected: explorerOpen ? selected : undefined,
+                  pinned,
+                  identify,
+                  showLabels: view.layers.features,
+                  onSelect: select,
+                  geometry,
+                }}
                 equatorial={evaluation.target?.eq ?? (target.coordinatesJ2000 ? { raDeg: target.coordinatesJ2000.raDeg, decDeg: target.coordinatesJ2000.decDeg } : undefined)}
                 otherField={otherField}
                 tools={
@@ -505,7 +681,19 @@ function Workspace({
             ].filter(Boolean)}
             onSave={saveSession}
           />
-
+          {explorerObject.features.length > 0 && (
+            <ExploreStrip
+              object={explorerObject}
+              inField={inField}
+              lit={lit}
+              selected={explorerOpen ? selected : undefined}
+              onSelect={select}
+              onLearn={() => {
+                select({ kind: "object" });
+                setTabRequest({ tab: "learn", n: Date.now() });
+              }}
+            />
+          )}
         </main>
 
         {/*
@@ -522,6 +710,10 @@ function Workspace({
             ideal={ideal}
             onIdealChange={setIdeal}
           />
+          {explorerOpen && explorerCtx ? (
+            <ObjectExplorerPanel ctx={explorerCtx} tabRequest={tabRequest} />
+          ) : (
+            <>
           {shown && <QuickResults result={shown} />}
           <SideTabs
             results={
@@ -536,6 +728,8 @@ function Workspace({
             target={<TargetInfo target={shownTarget} positionOfDate={evaluation.target?.eq} />}
             warnings={shown?.warnings.length ?? 0}
           />
+            </>
+          )}
         </aside>
       </div>
     </div>
@@ -669,6 +863,7 @@ function ViewCard({
   mode,
   onModeChange,
   result,
+  toolbar,
   footer,
   readout: readoutNode,
   children,
@@ -676,6 +871,8 @@ function ViewCard({
   mode: SimulationMode;
   onModeChange: (m: SimulationMode) => void;
   result?: SimulationResult;
+  /** Observation tools (identify, pin, labels, explore), beside the mode switch. */
+  toolbar?: React.ReactNode;
   /** Controls for the view (focus, exposure…), in their own card below it. */
   footer?: React.ReactNode;
   /** Replaces the headline readout (e.g. a magnification picker). */
@@ -768,6 +965,7 @@ function ViewCard({
             },
           ]}
         />
+        {toolbar}
         <div className="flex items-center gap-2">
           {readoutNode ?? (readout?.[1] && (
             <span className="hidden h-9 items-center gap-2 rounded-lg border border-border bg-surface-sunken/70 px-3 text-xs text-muted sm:inline-flex">

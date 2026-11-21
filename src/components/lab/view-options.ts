@@ -10,6 +10,8 @@ export interface ViewLayers {
   grid: boolean;
   /** The other instrument's field: the camera frame in eyepiece view, the eyepiece circle in camera view. */
   otherField: boolean;
+  /** Names of surface features (craters, maria…) identified from their coordinates. */
+  features: boolean;
 }
 
 /**
@@ -28,7 +30,7 @@ export interface ViewDisplay {
 /** "sky": north up, east left. "diagonal": mirrored, as through a star diagonal. "inverted": rotated 180°, as straight through. */
 export type Orientation = "sky" | "diagonal" | "inverted";
 
-export const DEFAULT_LAYERS: ViewLayers = { labels: true, scale: true, compass: false, grid: false, otherField: false };
+export const DEFAULT_LAYERS: ViewLayers = { labels: true, scale: true, compass: false, grid: false, otherField: false, features: true };
 export const DEFAULT_DISPLAY: ViewDisplay = { brightness: 1, contrast: 1, colour: "natural", orientation: "sky", seeing: true };
 
 /** CSS filter for the display adjustments. */

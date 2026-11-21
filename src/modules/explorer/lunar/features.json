@@ -1,0 +1,868 @@
+{
+  "generatedBy": "scripts/fetch-lunar-data.mjs",
+  "source": "gazetteer",
+  "retrievedAt": "2026-11-21",
+  "note": "Centre latitude (planetocentric) and longitude (east-positive, −180…180), diameter and extent as published by the Gazetteer. Do not edit by hand.",
+  "features": [
+    {
+      "id": "tycho",
+      "name": "Tycho",
+      "type": "Crater",
+      "typeCode": "AA",
+      "latDeg": -43.2958,
+      "lonDeg": -11.2153,
+      "diameterKm": 85.3,
+      "extent": {
+        "minLatDeg": -44.7022,
+        "maxLatDeg": -41.8894,
+        "minLonDeg": -13.1479,
+        "maxLonDeg": -9.2828
+      },
+      "nameOrigin": "Tycho Brahe; Danish astronomer (1546-1601).",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/6163",
+      "priority": 1,
+      "terrain": true
+    },
+    {
+      "id": "copernicus",
+      "name": "Copernicus",
+      "type": "Crater",
+      "typeCode": "AA",
+      "latDeg": 9.6209,
+      "lonDeg": -20.0786,
+      "diameterKm": 96.1,
+      "extent": {
+        "minLatDeg": 8.0394,
+        "maxLatDeg": 11.2079,
+        "minLonDeg": -21.6819,
+        "maxLonDeg": -18.4686
+      },
+      "nameOrigin": "Nicholas; Polish astronomer (1473-1543).",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/1296",
+      "priority": 1,
+      "terrain": true
+    },
+    {
+      "id": "plato",
+      "name": "Plato",
+      "type": "Crater",
+      "typeCode": "AA",
+      "latDeg": 51.6192,
+      "lonDeg": -9.3825,
+      "diameterKm": 100.7,
+      "extent": {
+        "minLatDeg": 49.9669,
+        "maxLatDeg": 53.2874,
+        "minLonDeg": -12.0158,
+        "maxLonDeg": -6.6629
+      },
+      "nameOrigin": "Greek philosopher c.428-c.347 B.C.",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/4757",
+      "priority": 1,
+      "terrain": true
+    },
+    {
+      "id": "aristarchus",
+      "name": "Aristarchus",
+      "type": "Crater",
+      "typeCode": "AA",
+      "latDeg": 23.7299,
+      "lonDeg": -47.4901,
+      "diameterKm": 40,
+      "extent": {
+        "minLatDeg": 23.0704,
+        "maxLatDeg": 24.3894,
+        "minLonDeg": -48.2105,
+        "maxLonDeg": -46.7697
+      },
+      "nameOrigin": "Greek astronomer (310-230 B.C. ?).",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/380",
+      "priority": 2,
+      "terrain": true
+    },
+    {
+      "id": "kepler",
+      "name": "Kepler",
+      "type": "Crater",
+      "typeCode": "AA",
+      "latDeg": 8.121,
+      "lonDeg": -38.0087,
+      "diameterKm": 29.5,
+      "extent": {
+        "minLatDeg": 7.6347,
+        "maxLatDeg": 8.6072,
+        "minLonDeg": -38.4999,
+        "maxLonDeg": -37.5176
+      },
+      "nameOrigin": "Johannes; German astronomer (1571-1630).",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/2990",
+      "priority": 2,
+      "terrain": true
+    },
+    {
+      "id": "clavius",
+      "name": "Clavius",
+      "type": "Crater",
+      "typeCode": "AA",
+      "latDeg": -58.6228,
+      "lonDeg": -14.7275,
+      "diameterKm": 230.8,
+      "extent": {
+        "minLatDeg": -62.4306,
+        "maxLatDeg": -54.8151,
+        "minLonDeg": -22.0324,
+        "maxLonDeg": -7.4178
+      },
+      "nameOrigin": "Christopher Klau; German mathematician (1537-1612).",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/1236",
+      "priority": 1,
+      "terrain": true
+    },
+    {
+      "id": "theophilus",
+      "name": "Theophilus",
+      "type": "Crater",
+      "typeCode": "AA",
+      "latDeg": -11.4524,
+      "lonDeg": 26.2847,
+      "diameterKm": 98.6,
+      "extent": {
+        "minLatDeg": -13.079,
+        "maxLatDeg": -9.8275,
+        "minLonDeg": 24.63,
+        "maxLonDeg": 27.9466
+      },
+      "nameOrigin": "Greek astronomer (unkn-A.D. 412).",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/5965",
+      "priority": 2,
+      "terrain": true
+    },
+    {
+      "id": "ptolemaeus",
+      "name": "Ptolemaeus",
+      "type": "Crater",
+      "typeCode": "AA",
+      "latDeg": -9.1605,
+      "lonDeg": -1.8373,
+      "diameterKm": 153.7,
+      "extent": {
+        "minLatDeg": -11.6943,
+        "maxLatDeg": -6.6266,
+        "minLonDeg": -4.4041,
+        "maxLonDeg": 0.7284
+      },
+      "nameOrigin": "Ptolemy, Claudius; Greek astronomer, mathematician, geographer (c. 87-150).",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/4860",
+      "priority": 2,
+      "terrain": false
+    },
+    {
+      "id": "alphonsus",
+      "name": "Alphonsus",
+      "type": "Crater",
+      "typeCode": "AA",
+      "latDeg": -13.3879,
+      "lonDeg": -2.8463,
+      "diameterKm": 110.5,
+      "extent": {
+        "minLatDeg": -15.2109,
+        "maxLatDeg": -11.565,
+        "minLonDeg": -4.7198,
+        "maxLonDeg": -0.9729
+      },
+      "nameOrigin": "Alfonso X (El Sabio); Spanish astronomer (1221-1284).",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/206",
+      "priority": 3,
+      "terrain": false
+    },
+    {
+      "id": "arzachel",
+      "name": "Arzachel",
+      "type": "Crater",
+      "typeCode": "AA",
+      "latDeg": -18.2643,
+      "lonDeg": -1.9304,
+      "diameterKm": 97,
+      "extent": {
+        "minLatDeg": -19.8637,
+        "maxLatDeg": -16.6649,
+        "minLonDeg": -3.6144,
+        "maxLonDeg": -0.2462
+      },
+      "nameOrigin": "Al-Zarqālī; Spanish-Arabic astronomer (died 1100).",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/412",
+      "priority": 3,
+      "terrain": false
+    },
+    {
+      "id": "cyrillus",
+      "name": "Cyrillus",
+      "type": "Crater",
+      "typeCode": "AA",
+      "latDeg": -13.2913,
+      "lonDeg": 24.0655,
+      "diameterKm": 98.1,
+      "extent": {
+        "minLatDeg": -14.9088,
+        "maxLatDeg": -11.6738,
+        "minLonDeg": 22.4035,
+        "maxLonDeg": 25.7277
+      },
+      "nameOrigin": "Saint Cyril; Egyptian theologian, chronologist (unkn-A.D. 444).",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/1372",
+      "priority": 3,
+      "terrain": false
+    },
+    {
+      "id": "catharina",
+      "name": "Catharina",
+      "type": "Crater",
+      "typeCode": "AA",
+      "latDeg": -17.9802,
+      "lonDeg": 23.5521,
+      "diameterKm": 98.8,
+      "extent": {
+        "minLatDeg": -19.6165,
+        "maxLatDeg": -16.3587,
+        "minLonDeg": 21.8386,
+        "maxLonDeg": 25.263
+      },
+      "nameOrigin": "St. Catherine of Alexandria; Greek theologian, philosopher (unkn-c. 307).",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/1076",
+      "priority": 3,
+      "terrain": false
+    },
+    {
+      "id": "langrenus",
+      "name": "Langrenus",
+      "type": "Crater",
+      "typeCode": "AA",
+      "latDeg": -8.8604,
+      "lonDeg": 61.038,
+      "diameterKm": 132,
+      "extent": {
+        "minLatDeg": -11.037,
+        "maxLatDeg": -6.6838,
+        "minLonDeg": 58.8354,
+        "maxLonDeg": 63.241
+      },
+      "nameOrigin": "Langren, Michel Florent van; Belgian selenographer, engineer (c. 1600-1675).",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/3273",
+      "priority": 2,
+      "terrain": false
+    },
+    {
+      "id": "petavius",
+      "name": "Petavius",
+      "type": "Crater",
+      "typeCode": "AA",
+      "latDeg": -25.3914,
+      "lonDeg": 60.7776,
+      "diameterKm": 184.1,
+      "extent": {
+        "minLatDeg": -28.4273,
+        "maxLatDeg": -22.3555,
+        "minLonDeg": 57.4172,
+        "maxLonDeg": 64.1373
+      },
+      "nameOrigin": "Petau, Denis; French chronologist, astronomer (1583-1652).",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/4668",
+      "priority": 2,
+      "terrain": false
+    },
+    {
+      "id": "grimaldi",
+      "name": "Grimaldi",
+      "type": "Crater",
+      "typeCode": "AA",
+      "latDeg": -5.38,
+      "lonDeg": -68.36,
+      "diameterKm": 235,
+      "extent": {
+        "minLatDeg": -8.2356,
+        "maxLatDeg": -2.5143,
+        "minLonDeg": -71.2347,
+        "maxLonDeg": -65.4906
+      },
+      "nameOrigin": "Francesco Maria; Italian astronomer, physicist (1618-1663).",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/2252",
+      "priority": 2,
+      "terrain": false
+    },
+    {
+      "id": "posidonius",
+      "name": "Posidonius",
+      "type": "Crater",
+      "typeCode": "AA",
+      "latDeg": 31.8783,
+      "lonDeg": 29.9913,
+      "diameterKm": 95.1,
+      "extent": {
+        "minLatDeg": 30.3109,
+        "maxLatDeg": 33.4457,
+        "minLonDeg": 28.1454,
+        "maxLonDeg": 31.8372
+      },
+      "nameOrigin": "Of Apamea; Greek geographer (135(?)-51(?) B.C.).",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/4808",
+      "priority": 3,
+      "terrain": false
+    },
+    {
+      "id": "archimedes",
+      "name": "Archimedes",
+      "type": "Crater",
+      "typeCode": "AA",
+      "latDeg": 29.7172,
+      "lonDeg": -3.9931,
+      "diameterKm": 81,
+      "extent": {
+        "minLatDeg": 28.3809,
+        "maxLatDeg": 31.0536,
+        "minLonDeg": -5.5318,
+        "maxLonDeg": -2.4545
+      },
+      "nameOrigin": "Greek physicist, mathematician (c. 287-212 B.C.).",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/350",
+      "priority": 2,
+      "terrain": false
+    },
+    {
+      "id": "eratosthenes",
+      "name": "Eratosthenes",
+      "type": "Crater",
+      "typeCode": "AA",
+      "latDeg": 14.4737,
+      "lonDeg": -11.3162,
+      "diameterKm": 58.8,
+      "extent": {
+        "minLatDeg": 13.5062,
+        "maxLatDeg": 15.4443,
+        "minLonDeg": -12.3149,
+        "maxLonDeg": -10.3135
+      },
+      "nameOrigin": "Greek astronomer, geographer (c. 276-196 B.C.).",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/1820",
+      "priority": 3,
+      "terrain": false
+    },
+    {
+      "id": "gassendi",
+      "name": "Gassendi",
+      "type": "Crater",
+      "typeCode": "AA",
+      "latDeg": -17.5546,
+      "lonDeg": -39.9637,
+      "diameterKm": 111.4,
+      "extent": {
+        "minLatDeg": -19.3913,
+        "maxLatDeg": -15.7178,
+        "minLonDeg": -41.8902,
+        "maxLonDeg": -38.0372
+      },
+      "nameOrigin": "Pierre; French astronomer, mathematician (1592-1655).",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/2111",
+      "priority": 2,
+      "terrain": false
+    },
+    {
+      "id": "schickard",
+      "name": "Schickard",
+      "type": "Crater",
+      "typeCode": "AA",
+      "latDeg": -44.3793,
+      "lonDeg": -55.1052,
+      "diameterKm": 212.2,
+      "extent": {
+        "minLatDeg": -47.8301,
+        "maxLatDeg": -40.9282,
+        "minLonDeg": -59.8414,
+        "maxLonDeg": -50.3453
+      },
+      "nameOrigin": "Wilhelm; German astronomer, mathematician (1592-1635).",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/5368",
+      "priority": 3,
+      "terrain": false
+    },
+    {
+      "id": "mare-imbrium",
+      "name": "Mare Imbrium",
+      "type": "Mare",
+      "typeCode": "ME",
+      "latDeg": 34.7244,
+      "lonDeg": -14.9086,
+      "diameterKm": 1145.5,
+      "extent": {
+        "minLatDeg": 15.2328,
+        "maxLatDeg": 51.4619,
+        "minLonDeg": -38.3621,
+        "maxLonDeg": 8.5555
+      },
+      "nameOrigin": "\"Sea of Showers.\"",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/3678",
+      "priority": 1,
+      "terrain": false
+    },
+    {
+      "id": "mare-serenitatis",
+      "name": "Mare Serenitatis",
+      "type": "Mare",
+      "typeCode": "ME",
+      "latDeg": 27.2879,
+      "lonDeg": 18.3596,
+      "diameterKm": 674.3,
+      "extent": {
+        "minLatDeg": 16.1332,
+        "maxLatDeg": 37.8092,
+        "minLonDeg": 6.5882,
+        "maxLonDeg": 29.9243
+      },
+      "nameOrigin": "\"Sea of Serenity.\"",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/3686",
+      "priority": 1,
+      "terrain": false
+    },
+    {
+      "id": "mare-tranquillitatis",
+      "name": "Mare Tranquillitatis",
+      "type": "Mare",
+      "typeCode": "ME",
+      "latDeg": 8.3487,
+      "lonDeg": 30.8346,
+      "diameterKm": 875.7,
+      "extent": {
+        "minLatDeg": -4.0512,
+        "maxLatDeg": 19.3748,
+        "minLonDeg": 16.924,
+        "maxLonDeg": 45.4903
+      },
+      "nameOrigin": "\"Sea of Tranquility.\"",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/3691",
+      "priority": 1,
+      "terrain": false
+    },
+    {
+      "id": "mare-crisium",
+      "name": "Mare Crisium",
+      "type": "Mare",
+      "typeCode": "ME",
+      "latDeg": 16.1774,
+      "lonDeg": 59.1037,
+      "diameterKm": 555.9,
+      "extent": {
+        "minLatDeg": 9.6892,
+        "maxLatDeg": 24.5344,
+        "minLonDeg": 49.5098,
+        "maxLonDeg": 68.5281
+      },
+      "nameOrigin": "\"Sea of Crises.\"",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/3671",
+      "priority": 1,
+      "terrain": false
+    },
+    {
+      "id": "mare-fecunditatis",
+      "name": "Mare Fecunditatis",
+      "type": "Mare",
+      "typeCode": "ME",
+      "latDeg": -7.835,
+      "lonDeg": 53.6691,
+      "diameterKm": 840.4,
+      "extent": {
+        "minLatDeg": -21.6952,
+        "maxLatDeg": 6.1117,
+        "minLonDeg": 40.7707,
+        "maxLonDeg": 63.3395
+      },
+      "nameOrigin": "\"Sea of Fecundity.\"",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/3673",
+      "priority": 2,
+      "terrain": false
+    },
+    {
+      "id": "mare-nectaris",
+      "name": "Mare Nectaris",
+      "type": "Mare",
+      "typeCode": "ME",
+      "latDeg": -15.1852,
+      "lonDeg": 34.6021,
+      "diameterKm": 339.4,
+      "extent": {
+        "minLatDeg": -21.0586,
+        "maxLatDeg": -9.905,
+        "minLonDeg": 28.7515,
+        "maxLonDeg": 39.6781
+      },
+      "nameOrigin": "\"Sea of Nectar.\"",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/3683",
+      "priority": 2,
+      "terrain": false
+    },
+    {
+      "id": "mare-nubium",
+      "name": "Mare Nubium",
+      "type": "Mare",
+      "typeCode": "ME",
+      "latDeg": -20.5894,
+      "lonDeg": -17.2872,
+      "diameterKm": 714.5,
+      "extent": {
+        "minLatDeg": -30.481,
+        "maxLatDeg": -11.8521,
+        "minLonDeg": -29.2675,
+        "maxLonDeg": -5.4456
+      },
+      "nameOrigin": "\"Sea of Clouds.\"",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/3684",
+      "priority": 2,
+      "terrain": false
+    },
+    {
+      "id": "mare-humorum",
+      "name": "Mare Humorum",
+      "type": "Mare",
+      "typeCode": "ME",
+      "latDeg": -24.4785,
+      "lonDeg": -38.5716,
+      "diameterKm": 419.7,
+      "extent": {
+        "minLatDeg": -31.0594,
+        "maxLatDeg": -18.4374,
+        "minLonDeg": -45.8258,
+        "maxLonDeg": -30.6105
+      },
+      "nameOrigin": "\"Sea of Moisture.\"",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/3677",
+      "priority": 2,
+      "terrain": false
+    },
+    {
+      "id": "mare-frigoris",
+      "name": "Mare Frigoris",
+      "type": "Mare",
+      "typeCode": "ME",
+      "latDeg": 57.5923,
+      "lonDeg": -0.0064,
+      "diameterKm": 1446.4,
+      "extent": {
+        "minLatDeg": 49.0806,
+        "maxLatDeg": 64.3818,
+        "minLonDeg": -43.1353,
+        "maxLonDeg": 38.033
+      },
+      "nameOrigin": "\"Sea of Cold.\"",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/3674",
+      "priority": 2,
+      "terrain": false
+    },
+    {
+      "id": "mare-vaporum",
+      "name": "Mare Vaporum",
+      "type": "Mare",
+      "typeCode": "ME",
+      "latDeg": 13.2,
+      "lonDeg": 4.09,
+      "diameterKm": 242.5,
+      "extent": {
+        "minLatDeg": 9.3893,
+        "maxLatDeg": 16.9053,
+        "minLonDeg": -0.4133,
+        "maxLonDeg": 8.7293
+      },
+      "nameOrigin": "\"Sea of Vapors.\"",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/3694",
+      "priority": 3,
+      "terrain": false
+    },
+    {
+      "id": "oceanus-procellarum",
+      "name": "Oceanus Procellarum",
+      "type": "Oceanus",
+      "typeCode": "OC",
+      "latDeg": 20.6714,
+      "lonDeg": -56.6774,
+      "diameterKm": 2592.2,
+      "extent": {
+        "minLatDeg": -16.2658,
+        "maxLatDeg": 57.433,
+        "minLonDeg": -81.0835,
+        "maxLonDeg": -26.8498
+      },
+      "nameOrigin": "\"Ocean of Storms.\"",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/4395",
+      "priority": 1,
+      "terrain": false
+    },
+    {
+      "id": "sinus-iridum",
+      "name": "Sinus Iridum",
+      "type": "Sinus",
+      "typeCode": "SI",
+      "latDeg": 45.0101,
+      "lonDeg": -31.6653,
+      "diameterKm": 249.3,
+      "extent": {
+        "minLatDeg": 40.5316,
+        "maxLatDeg": 48.0051,
+        "minLonDeg": -36.3755,
+        "maxLonDeg": -25.8188
+      },
+      "nameOrigin": "\"Bay of Rainbows.\"",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/5565",
+      "priority": 2,
+      "terrain": false
+    },
+    {
+      "id": "sinus-medii",
+      "name": "Sinus Medii",
+      "type": "Sinus",
+      "typeCode": "SI",
+      "latDeg": 1.63,
+      "lonDeg": 1.03,
+      "diameterKm": 286.7,
+      "extent": {
+        "minLatDeg": -2.0479,
+        "maxLatDeg": 4.6411,
+        "minLonDeg": -3.3711,
+        "maxLonDeg": 5.5506
+      },
+      "nameOrigin": "\"Bay of the center.\"",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/5567",
+      "priority": 3,
+      "terrain": false
+    },
+    {
+      "id": "montes-apenninus",
+      "name": "Montes Apenninus",
+      "type": "Mons",
+      "typeCode": "MO",
+      "latDeg": 19.8714,
+      "lonDeg": 0.0253,
+      "diameterKm": 599.7,
+      "extent": {
+        "minLatDeg": 14.6303,
+        "maxLatDeg": 28.4675,
+        "minLonDeg": -10.205,
+        "maxLonDeg": 7.3372
+      },
+      "nameOrigin": "Named from terrestrial Apennines.",
+      "approvalDate": "1961-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/4004",
+      "priority": 2,
+      "terrain": false
+    },
+    {
+      "id": "montes-alpes",
+      "name": "Montes Alpes",
+      "type": "Mons",
+      "typeCode": "MO",
+      "latDeg": 48.36,
+      "lonDeg": -0.58,
+      "diameterKm": 334.5,
+      "extent": {
+        "minLatDeg": 42.0415,
+        "maxLatDeg": 52.808,
+        "minLonDeg": -5.6041,
+        "maxLonDeg": 3.2211
+      },
+      "nameOrigin": "Named from terrestrial Alps.",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/4003",
+      "priority": 2,
+      "terrain": false
+    },
+    {
+      "id": "montes-caucasus",
+      "name": "Montes Caucasus",
+      "type": "Mons",
+      "typeCode": "MO",
+      "latDeg": 37.5188,
+      "lonDeg": 9.9311,
+      "diameterKm": 443.5,
+      "extent": {
+        "minLatDeg": 30.5286,
+        "maxLatDeg": 44.2646,
+        "minLonDeg": 6.06,
+        "maxLonDeg": 14.2676
+      },
+      "nameOrigin": "Named from terrestrial Caucasus Mountains.",
+      "approvalDate": "1961-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/4007",
+      "priority": 3,
+      "terrain": false
+    },
+    {
+      "id": "montes-carpatus",
+      "name": "Montes Carpatus",
+      "type": "Mons",
+      "typeCode": "MO",
+      "latDeg": 14.5677,
+      "lonDeg": -23.6245,
+      "diameterKm": 333.6,
+      "extent": {
+        "minLatDeg": 13.3681,
+        "maxLatDeg": 17.513,
+        "minLonDeg": -29.2517,
+        "maxLonDeg": -18.1455
+      },
+      "nameOrigin": "Named from terrestrial Carpathians.",
+      "approvalDate": "1961-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/4006",
+      "priority": 3,
+      "terrain": false
+    },
+    {
+      "id": "mons-piton",
+      "name": "Mons Piton",
+      "type": "Mons",
+      "typeCode": "MO",
+      "latDeg": 40.7167,
+      "lonDeg": -0.9227,
+      "diameterKm": 22.5,
+      "extent": {
+        "minLatDeg": 40.3184,
+        "maxLatDeg": 41.0754,
+        "minLonDeg": -1.2903,
+        "maxLonDeg": -0.539
+      },
+      "nameOrigin": "Named from Mt. Piton on Tenerife Islands.",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/3993",
+      "priority": 3,
+      "terrain": false
+    },
+    {
+      "id": "mons-pico",
+      "name": "Mons Pico",
+      "type": "Mons",
+      "typeCode": "MO",
+      "latDeg": 45.82,
+      "lonDeg": -8.87,
+      "diameterKm": 24.4,
+      "extent": {
+        "minLatDeg": 45.4414,
+        "maxLatDeg": 46.1496,
+        "minLonDeg": -9.3902,
+        "maxLonDeg": -8.4247
+      },
+      "nameOrigin": "Spanish for \"peak.\"",
+      "approvalDate": "1935-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/3992",
+      "priority": 3,
+      "terrain": false
+    },
+    {
+      "id": "vallis-alpes",
+      "name": "Vallis Alpes",
+      "type": "Vallis",
+      "typeCode": "VA",
+      "latDeg": 49.2088,
+      "lonDeg": 3.6314,
+      "diameterKm": 155.4,
+      "extent": {
+        "minLatDeg": 47.7937,
+        "maxLatDeg": 50.5212,
+        "minLonDeg": 0.3631,
+        "maxLonDeg": 6.9503
+      },
+      "nameOrigin": "\"Alpine Valley.\"",
+      "approvalDate": "1961-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/6290",
+      "priority": 2,
+      "terrain": false
+    },
+    {
+      "id": "vallis-schroteri",
+      "name": "Vallis Schröteri",
+      "type": "Vallis",
+      "typeCode": "VA",
+      "latDeg": 26.1555,
+      "lonDeg": -51.5805,
+      "diameterKm": 185.3,
+      "extent": {
+        "minLatDeg": 24.157,
+        "maxLatDeg": 26.323,
+        "minLonDeg": -53.6272,
+        "maxLonDeg": -49.2835
+      },
+      "nameOrigin": "Schröter's Valley.",
+      "approvalDate": "1961-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/6300",
+      "priority": 3,
+      "terrain": false
+    },
+    {
+      "id": "rupes-recta",
+      "name": "Rupes Recta",
+      "type": "Rupes",
+      "typeCode": "RU",
+      "latDeg": -21.6748,
+      "lonDeg": -7.7019,
+      "diameterKm": 115.9,
+      "extent": {
+        "minLatDeg": -23.5256,
+        "maxLatDeg": -19.886,
+        "minLonDeg": -8.4091,
+        "maxLonDeg": -7.2059
+      },
+      "nameOrigin": "Latin for \"straight cliff\" (the straight wall).",
+      "approvalDate": "1961-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/5230",
+      "priority": 2,
+      "terrain": false
+    },
+    {
+      "id": "statio-tranquillitatis",
+      "name": "Statio Tranquillitatis",
+      "type": "Statio",
+      "typeCode": "ST",
+      "latDeg": 0.6741,
+      "lonDeg": 23.4732,
+      "diameterKm": 0,
+      "extent": {
+        "minLatDeg": 0.674,
+        "maxLatDeg": 0.6743,
+        "minLonDeg": 23.473,
+        "maxLonDeg": 23.4733
+      },
+      "nameOrigin": "\"Tranquility Base,\" Apollo 11 landing site.",
+      "approvalDate": "1970-01-01",
+      "gazetteerUrl": "https://planetarynames.wr.usgs.gov/Feature/5684",
+      "priority": 3,
+      "terrain": false
+    }
+  ]
+}

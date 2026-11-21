@@ -1,5 +1,6 @@
 import type { ConfigurationSpec, TelescopeConfiguration } from "@/modules/configurations/models";
 import type { Accessory, AccessoryInput, TelescopeProfile, TelescopeProfileInput } from "@/modules/equipment/models";
+import type { Discovery, DiscoveryInput } from "@/modules/discoveries/models";
 import type { ObservationProject, ObservationProjectInput } from "@/modules/projects/models";
 import type { NewSession, SimulationSession } from "@/modules/sessions/models";
 
@@ -52,6 +53,13 @@ export interface ObservatoryRepository {
   /** Idempotent. The session must exist and belong to the same user. */
   addSessionToProject(projectId: string, sessionId: string): Promise<void>;
   removeSessionFromProject(projectId: string, sessionId: string): Promise<void>;
+
+  // Discoveries (objects and features saved while exploring)
+  listDiscoveries(): Promise<Discovery[]>;
+  /** Idempotent per target, kind and feature: saving again returns the existing record. */
+  createDiscovery(input: DiscoveryInput): Promise<Discovery>;
+  updateDiscoveryNote(id: string, note: string | undefined): Promise<Discovery>;
+  deleteDiscovery(id: string): Promise<void>;
 
   /** Notified after any change, including changes from other browser tabs. */
   subscribe(listener: () => void): () => void;

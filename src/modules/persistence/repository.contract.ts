@@ -375,6 +375,40 @@ export function runRepositoryContract(name: string, makeRepository: () => Promis
       });
     });
 
+    describe("discoveries", () => {
+      const TYCHO = { targetId: "moon", kind: "feature" as const, featureId: "tycho", name: "Tycho", observedAt: "2026-11-21T14:00:00.000Z", siteName: "Bangkok", setupSummary: "200 mm f/5 · 167×" };
+
+      it("saves once per thing, lists newest first, edits notes and deletes", async () => {
+        const a = await repo.createDiscovery(TYCHO);
+        expect(a).toMatchObject({ ...TYCHO, id: expect.any(String) });
+        // Saving the same thing again keeps the first record.
+        const again = await repo.createDiscovery({ ...TYCHO, name: "Tycho again" });
+        expect(again.id).toBe(a.id);
+        const b = await repo.createDiscovery({ targetId: "jupiter", kind: "companion", featureId: "io", name: "Io" });
+        const c = await repo.createDiscovery({ targetId: "m42", kind: "object", name: "Orion Nebula" });
+        const list = await repo.listDiscoveries();
+        expect(list.map((d) => d.id)).toEqual([c.id, b.id, a.id]);
+
+        const noted = await repo.updateDiscoveryNote(a.id, "  Rays very bright at full Moon  ");
+        expect(noted.note).toBe("Rays very bright at full Moon");
+        expect((await repo.updateDiscoveryNote(a.id, "")).note).toBeUndefined();
+
+        await repo.deleteDiscovery(b.id);
+        expect((await repo.listDiscoveries()).map((d) => d.id)).toEqual([c.id, a.id]);
+        await expect(repo.deleteDiscovery(MISSING_ID)).rejects.toBeInstanceOf(NotFoundError);
+        await expect(repo.updateDiscoveryNote(MISSING_ID, "x")).rejects.toBeInstanceOf(NotFoundError);
+      });
+
+      it("rejects invalid discoveries", async () => {
+        await expect(repo.createDiscovery({ ...TYCHO, featureId: undefined })).rejects.toBeInstanceOf(ValidationError);
+        await expect(repo.createDiscovery({ targetId: "moon", kind: "object", featureId: "tycho", name: "Moon" })).rejects.toBeInstanceOf(ValidationError);
+        await expect(repo.createDiscovery({ ...TYCHO, name: " " })).rejects.toBeInstanceOf(ValidationError);
+        await expect(repo.createDiscovery({ ...TYCHO, targetId: "Not An Id" })).rejects.toBeInstanceOf(ValidationError);
+        const d = await repo.createDiscovery(TYCHO);
+        await expect(repo.updateDiscoveryNote(d.id, "x".repeat(2001))).rejects.toBeInstanceOf(ValidationError);
+      });
+    });
+
     it("notifies subscribers on change", async () => {
       let calls = 0;
       const off = repo.subscribe(() => calls++);

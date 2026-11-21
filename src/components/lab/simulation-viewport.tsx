@@ -15,13 +15,19 @@ import type { CuratedTarget } from "@/modules/targets/catalogue";
 import type { SatelliteMark } from "@/modules/simulations/renderers/satellite-drawing";
 import type { ViewAtmosphere, ViewPhase } from "@/modules/simulations/renderers/atmosphere";
 import { poleAngleDeg } from "@/modules/sky/planets";
-import { SATELLITE_METHOD, satellitesOf } from "@/modules/targets/satellites";
+import { SATELLITE_METHOD, SATURN_MOON_METHOD, satellitesOf } from "@/modules/targets/satellites";
 import { STAR_CREDIT, STAR_LICENSE, STAR_LICENSE_URL } from "@/modules/targets/star-fields";
 import { useReferenceImage } from "@/modules/targets/use-reference-image";
 import { useStarField } from "@/modules/targets/use-star-field";
 import { ReferenceCredit } from "./reference-credit";
 import { skyGrid } from "@/modules/simulations/renderers/sky-grid";
 import { displayFilter, orient, ORIENTATION_CSS, type ViewDisplay, type ViewLayers } from "./view-options";
+import type { Site } from "@/modules/sky/coords";
+import { moonOrientation } from "@/modules/sky/moon";
+import { placeFeatures, placeRings, type PlacedFeature, type PlacedRing, type ViewGeometry } from "@/modules/explorer/identify";
+import { loadSaturnMoonData, type SaturnMoonData } from "@/modules/targets/saturn-moons";
+import { useMoonDisc } from "@/modules/explorer/use-moon-disc";
+import { FeatureAnnotationLayer, identifyAt, type CompanionMark, type ExplorerViewProps } from "@/components/explorer/feature-layer";
 
 export interface ViewSettings {
   focusOffset: number;
@@ -37,6 +43,8 @@ export interface ViewSettings {
   atmosphere?: ViewAtmosphere;
   /** Moon or planet phase at that time. */
   phase?: ViewPhase;
+  /** Where the observer is, for the Moon's topocentric libration. Default: the Earth's centre. */
+  site?: Site;
 }
 
 interface Props {
@@ -66,6 +74,8 @@ interface Props {
   otherField?: { shape: "circle"; diameterArcsec: number; label: string } | { shape: "rect"; widthArcsec: number; heightArcsec: number; label: string };
   /** Buttons in the bottom-right corner. */
   tools?: React.ReactNode;
+  /** Identification of features and companions inside the view. */
+  explorer?: ExplorerViewProps;
 }
 
 const MAX_EYEPIECE_PX = 560;
@@ -87,27 +97,43 @@ export function SimulationViewport({
   equatorial,
   otherField,
   tools,
+  explorer,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
   const referenceState = useReferenceImage(target.id);
-  const reference = referenceState.status === "ready" ? referenceState.reference : undefined;
+  const photoReference = referenceState.status === "ready" ? referenceState.reference : undefined;
   // Eyepiece "as seen by eye": star-free survey image plus catalogue stars.
   const wantVisual = result.mode === "eyepiece" && !settings.longExposureColor;
   const objectState = useReferenceImage(target.id, wantVisual ? "object" : "full");
   const starField = useStarField(target.id, wantVisual);
   const objectRef = objectState.status === "ready" ? objectState.reference : undefined;
   const visual = useMemo(
-    () => (wantVisual && objectRef && starField && objectRef.meta.src !== reference?.meta.src ? { object: objectRef, starField } : undefined),
-    [wantVisual, objectRef, starField, reference],
+    // Survey fields only (the Moon's projected disc never has a star-free variant).
+    () => (wantVisual && objectRef && starField && objectRef.meta.src !== photoReference?.meta.src ? { object: objectRef, starField } : undefined),
+    [wantVisual, objectRef, starField, photoReference],
   );
   const [starInfo, setStarInfo] = useState<{ shown: number; limit: number }>();
   const [mountedAt] = useState(() => new Date().toISOString());
   const observedAt = settings.observedAt ?? mountedAt;
-  const satellites = useMemo(() => satellitesOf(target.id, new Date(observedAt)), [target.id, observedAt]);
-  // Planets are drawn with their real tilt on a north-up sky (belts, rings, moons' line).
-  const bodyRotationDeg = useMemo(() => poleAngleDeg(target.id, new Date(observedAt)), [target.id, observedAt]);
+  // Saturn's moon models are loaded only when Saturn is shown.
+  const [saturnData, setSaturnData] = useState<SaturnMoonData>();
+  useEffect(() => {
+    if (target.id === "saturn") loadSaturnMoonData().then(setSaturnData, () => {});
+  }, [target.id]);
+  const satellites = useMemo(() => satellitesOf(target.id, new Date(observedAt), saturnData), [target.id, observedAt, saturnData]);
+  // The Moon as it faces this observer at this time: libration and axis angle.
+  const siteKey = settings.site ? `${settings.site.latDeg},${settings.site.lonDeg}` : "";
+  const moonOrient = useMemo(
+    () => (target.id === "moon" ? moonOrientation(new Date(observedAt), settings.site) : undefined),
+    [target.id, observedAt, siteKey], // eslint-disable-line react-hooks/exhaustive-deps
+  );
+  // Planets and the Moon are drawn with their real tilt on a north-up sky (belts, rings, moons' line, lunar axis).
+  const bodyRotationDeg = useMemo(
+    () => moonOrient?.axisPaDeg ?? poleAngleDeg(target.id, new Date(observedAt)),
+    [target.id, observedAt, moonOrient],
+  );
   const [marks, setMarks] = useState<SatelliteMark[]>([]);
   const updateMarks = (next: SatelliteMark[] = []) =>
     setMarks((prev) => (JSON.stringify(prev) === JSON.stringify(next) ? prev : next));
@@ -147,9 +173,61 @@ export function SimulationViewport({
     }
   }
   const panPx = geom && pan ? { x: pan.x * geom.pxPerArcsec, y: pan.y * geom.pxPerArcsec } : undefined;
+
+  // The Moon from the LRO global map, projected for tonight's libration so that
+  // feature labels land on the features; the photograph is the fallback.
+  const dpr = typeof window === "undefined" ? 1 : window.devicePixelRatio || 1;
+  const moonDisc = useMoonDisc(target.id === "moon", moonOrient, (geom?.targetPx ?? 0) * dpr);
+  const reference = moonDisc ?? photoReference;
   const panKey = panPx ? `${panPx.x.toFixed(1)},${panPx.y.toFixed(1)}` : "";
   const orientation = display?.orientation ?? "sky";
   const showLayer = (k: keyof ViewLayers) => (layers ? layers[k] : k === "labels" || k === "scale");
+
+  // --- Identification: where features and companions are on screen ---
+  const viewGeom: ViewGeometry | undefined =
+    geom && width > 0
+      ? { width, height, targetPx: geom.targetPx, panPx: panPx ?? { x: 0, y: 0 }, orientation, fieldRadiusPx: geom.fieldRadiusPx }
+      : undefined;
+  const surface = explorer?.geometry;
+  const placed: PlacedFeature[] = useMemo(
+    () => (explorer && surface?.project && viewGeom && explorer.object.features.length ? placeFeatures(explorer.object.features, surface.project, surface.bodyRadiusKm, viewGeom, surface.featureRadius) : []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [explorer?.object, surface, width, height, geom?.targetPx, geom?.fieldRadiusPx, panKey, orientation],
+  );
+  const placedRings: PlacedRing[] = useMemo(
+    () => (explorer && surface?.rings && viewGeom ? placeRings(explorer.object.rings, surface.rings, viewGeom) : []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [explorer?.object, surface, width, height, geom?.targetPx, panKey, orientation],
+  );
+  const companionMarks: CompanionMark[] =
+    explorer && explorer.object.companions.length
+      ? placeLabels(marks).flatMap((m) => {
+          const c = explorer.object.companions.find((x) => x.name === m.name);
+          if (!c) return [];
+          const p = orient(orientation, m.x + (panPx?.x ?? 0), m.y + (panPx?.y ?? 0));
+          return [{ id: c.id, name: c.name, x: width / 2 + p.x, y: height / 2 + p.y, labelDy: m.dy }];
+        })
+      : [];
+  // Moons not drawn: beyond the field, or in it but too faint for this setup.
+  const unseen = { outside: [] as string[], faint: [] as string[] };
+  for (const s of satellites) {
+    if (s.hidden || marks.some((m) => m.name === s.name)) continue;
+    const r = geom ? Math.hypot(s.x * (geom.targetPx / 2) + (panPx?.x ?? 0), s.y * (geom.targetPx / 2) - (panPx?.y ?? 0)) : Infinity;
+    const fieldR = geom?.fieldRadiusPx ?? Math.max(width, height) / 2;
+    (r > fieldR ? unseen.outside : unseen.faint).push(s.name);
+  }
+  const [hover, setHover] = useState<{ x: number; y: number; label: string }>();
+  const nameOf = (sel: ReturnType<typeof identifyAt>) => {
+    if (!sel || !explorer) return undefined;
+    if (sel.kind === "object") return explorer.object.name;
+    if (sel.kind === "feature") return explorer.object.features.find((f) => f.id === sel.id)?.name;
+    if (sel.kind === "ring") return explorer.object.rings.find((r) => r.id === sel.id)?.name;
+    return explorer.object.companions.find((c) => c.id === sel.id)?.name;
+  };
+  const pointIn = (e: React.PointerEvent) => {
+    const r = (e.currentTarget.parentElement as HTMLElement).getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  };
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -243,15 +321,35 @@ export function SimulationViewport({
           onPointerDown: (e: React.PointerEvent) => {
             (e.target as Element).setPointerCapture?.(e.pointerId);
             drag.current = { x: e.clientX, y: e.clientY, start: pan ?? { x: 0, y: 0 } };
+            setHover(undefined);
           },
           onPointerMove: (e: React.PointerEvent) => {
             const d = drag.current;
-            if (!d || !geom) return;
+            if (!d) {
+              // Identify mode: name what is under the pointer.
+              if (explorer?.identify && viewGeom && e.pointerType === "mouse") {
+                const p = pointIn(e);
+                const label = nameOf(identifyAt(p.x, p.y, viewGeom, placed, companionMarks, explorer.object.rings, surface?.rings));
+                setHover((prev) => (label ? (prev?.label === label && Math.hypot(prev.x - p.x, prev.y - p.y) < 6 ? prev : { ...p, label }) : undefined));
+              }
+              return;
+            }
+            if (!geom) return;
             // Screen movement back to sky orientation (each orientation is its own inverse).
             const m = orient(orientation, e.clientX - d.x, e.clientY - d.y);
             setPan(d.start.x + m.x / geom.pxPerArcsec, d.start.y + m.y / geom.pxPerArcsec);
           },
-          onPointerUp: () => (drag.current = null),
+          onPointerUp: (e: React.PointerEvent) => {
+            const d = drag.current;
+            drag.current = null;
+            // A click (not a drag) in identify mode picks what is there.
+            if (d && explorer?.identify && viewGeom && Math.hypot(e.clientX - d.x, e.clientY - d.y) < 5) {
+              const p = pointIn(e);
+              const sel = identifyAt(p.x, p.y, viewGeom, placed, companionMarks, explorer.object.rings, surface?.rings);
+              if (sel) explorer.onSelect(sel);
+            }
+          },
+          onPointerLeave: () => setHover(undefined),
           onPointerCancel: () => (drag.current = null),
           onKeyDown: (e: React.KeyboardEvent) => {
             const step = (geom!.spanArcsec || 1) * 0.05;
@@ -308,7 +406,7 @@ export function SimulationViewport({
           style={{ width, height, transform: ORIENTATION_CSS[orientation], filter: display ? displayFilter(display) : undefined, touchAction: onPanChange ? "none" : undefined }}
           data-view-canvas
           {...panHandlers}
-          className={`block ${result.mode === "camera" ? "rounded-sm border border-border" : "rounded-full shadow-[0_0_0_1px_rgba(108,123,255,0.25),0_0_60px_-10px_rgba(81,98,255,0.35)]"} ${stale ? "opacity-40" : ""} ${onPanChange ? "cursor-grab outline-none active:cursor-grabbing" : ""}`}
+          className={`block ${result.mode === "camera" ? "rounded-sm border border-border" : "rounded-full shadow-[0_0_0_1px_rgba(108,123,255,0.25),0_0_60px_-10px_rgba(81,98,255,0.35)]"} ${stale ? "opacity-40" : ""} ${onPanChange ? `${explorer?.identify ? "cursor-crosshair" : "cursor-grab"} outline-none active:cursor-grabbing` : ""}`}
         />
         {width > 0 && !compact && geom && (
           <ViewLayersOverlay
@@ -327,8 +425,18 @@ export function SimulationViewport({
         {width > 0 && !compact && (
           <>
 
+            {explorer && !stale && (
+              <FeatureAnnotationLayer
+                explorer={explorer}
+                placed={placed}
+                rings={placedRings}
+                ringScalePx={geom ? geom.targetPx / 2 : 0}
+                marks={showLayer("labels") ? companionMarks : []}
+                hover={hover}
+              />
+            )}
             {showLayer("labels") &&
-              placeLabels(marks).map((m) => {
+              placeLabels(marks.filter((m) => !companionMarks.some((c) => c.name === m.name))).map((m) => {
                 const p = orient(orientation, m.x + (panPx?.x ?? 0), m.y + (panPx?.y ?? 0));
                 return (
                   <span
@@ -367,7 +475,8 @@ export function SimulationViewport({
           observedAt={observedAt}
           onChange={onObservedAtChange}
           notes={satellites.filter((s) => s.hidden).map((s) => `${s.name} is ${s.inFront ? "crossing in front of" : "behind"} ${target.name}`)}
-          outside={satellites.filter((s) => !s.hidden && !marks.some((m) => m.name === s.name)).map((s) => s.name)}
+          outside={unseen.outside}
+          faint={unseen.faint}
         />
       )}
       {reference && !compact && <ReferenceCredit meta={reference.meta} />}
@@ -403,12 +512,15 @@ function MoonTime({
   onChange,
   notes,
   outside,
+  faint,
 }: {
   planet: string;
   observedAt: string;
   onChange?: (iso: string) => void;
   notes: string[];
   outside: string[];
+  /** In the field but below this setup's limiting magnitude. */
+  faint?: string[];
 }) {
   return (
     <div className="mt-3 space-y-1 text-xs text-muted">
@@ -437,12 +549,16 @@ function MoonTime({
       </div>
       {(notes.length > 0 || outside.length > 0) && (
         <p>
-          {[...notes, ...(outside.length ? [`${outside.join(", ")} ${outside.length === 1 ? "is" : "are"} outside this field of view`] : [])].join(" · ")}.
+          {[
+            ...notes,
+            ...(outside.length ? [`${outside.join(", ")} ${outside.length === 1 ? "is" : "are"} outside this field of view`] : []),
+            ...(faint?.length ? [`${faint.join(", ")} ${faint.length === 1 ? "is" : "are"} too faint to see with this setup`] : []),
+          ].join(" · ")}.
         </p>
       )}
       <p className="text-subtle">
         North up, west to the right, as on the sky. A star diagonal mirrors this and a straight-through telescope turns
-        it upside down. {SATELLITE_METHOD}
+        it upside down. {planet === "Saturn" ? SATURN_MOON_METHOD : SATELLITE_METHOD}
       </p>
     </div>
   );

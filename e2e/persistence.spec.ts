@@ -127,7 +127,7 @@ test("AC-07/AC-08: mode switch keeps target and setup; inputs update results", a
 
   await page.getByRole("tab", { name: "Camera view" }).click();
   await expect(metric(page, /^Image scale/)).toContainText("0.78″/px");
-  await expect(page.getByRole("button", { name: "Jupiter" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: "Jupiter", exact: true })).toHaveAttribute("aria-pressed", "true");
 
   await page.getByRole("tab", { name: "Eyepiece view" }).click();
   await expect(metric(page, /^Magnification/)).toContainText("100×");

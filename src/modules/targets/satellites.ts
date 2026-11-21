@@ -21,6 +21,8 @@ export interface Satellite {
   magnitude: number;
   /** Diameter in planet equatorial radii. */
   diameter: number;
+  /** Towards the observer, same units as x and y (when known). */
+  z?: number;
 }
 
 const D2R = Math.PI / 180;
@@ -29,6 +31,7 @@ const cos = (deg: number) => Math.cos(deg * D2R);
 
 // ΔT (~1 min) is ignored: Io moves < 0.2° in that time.
 import { poleAngleDeg } from "@/modules/sky/planets";
+import { saturnMoons, type SaturnMoonData } from "./saturn-moons";
 import { julianDay } from "@/modules/sky/time";
 export { julianDay };
 
@@ -95,6 +98,7 @@ export function galileanMoons(date: Date): Satellite[] {
       name: m.name,
       x,
       y,
+      z: rad * cos(u),
       inFront,
       hidden: onDisc,
       magnitude: m.magnitude,
@@ -105,16 +109,20 @@ export function galileanMoons(date: Date): Satellite[] {
 
 /** Targets with moons we can place. */
 export function hasSatellites(targetId: string): boolean {
-  return targetId === "jupiter";
+  return targetId === "jupiter" || targetId === "saturn";
 }
 
 /**
- * Moons as placed on the sky (celestial north up): Meeus gives them along the
- * planet's equator, which is turned by the pole's position angle.
+ * Moons as placed on the sky (celestial north up). Jupiter: Meeus gives them
+ * along the planet's equator, which is turned by the pole's position angle;
+ * units are Jupiter's equatorial radius. Saturn: from the fitted Horizons
+ * models (pass the loaded data); units are the rings' outer radius, the
+ * catalogued size of Saturn.
  */
-export function satellitesOf(targetId: string, date: Date): Satellite[] {
-  if (targetId !== "jupiter") return [];
-  return rotateToSky(galileanMoons(date), poleAngleDeg(targetId, date) ?? 0);
+export function satellitesOf(targetId: string, date: Date, saturnData?: SaturnMoonData): Satellite[] {
+  if (targetId === "jupiter") return rotateToSky(galileanMoons(date), poleAngleDeg(targetId, date) ?? 0);
+  if (targetId === "saturn" && saturnData) return saturnMoons(saturnData, date, poleAngleDeg(targetId, date) ?? 0);
+  return [];
 }
 
 /** Turn offsets from the planet's equatorial frame onto the sky (pole at position angle `poleDeg`). */
@@ -127,6 +135,8 @@ export function rotateToSky(satellites: Satellite[], poleDeg: number): Satellite
     return { ...m, x: -(east * c + north * s), y: -east * s + north * c };
   });
 }
+
+export { SATURN_MOON_METHOD } from "./saturn-moons";
 
 export const SATELLITE_METHOD =
   "Positions calculated with the low-accuracy theory in Meeus, Astronomical Algorithms, ch. 44. Brightness is a typical value; eclipses by Jupiter's shadow are not shown.";

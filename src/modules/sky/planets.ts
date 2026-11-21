@@ -39,7 +39,9 @@ const SIZE: Record<PlanetId, { d1: number; flattening: number }> = {
 };
 
 /** Saturn's ring system, outer edge of the A ring / equatorial radius of the globe. */
-const SATURN_RING_RATIO = 2.27;
+export const SATURN_RING_RATIO = 2.27;
+/** Saturn's equatorial radius (1 bar), km. */
+export const SATURN_RADIUS_KM = 60_268;
 /** Saturn's north pole, J2000. */
 const SATURN_POLE: Equatorial = { raDeg: 40.589, decDeg: 83.537 };
 
@@ -85,6 +87,8 @@ export interface PlanetPosition extends Equatorial {
   magnitude: number;
   /** Saturn only: tilt of the rings towards us, degrees. */
   ringTiltDeg?: number;
+  /** Geocentric direction, mean equator and equinox J2000 (for frames such as ICRF satellite ephemerides). */
+  j2000: Equatorial;
 }
 
 /** Apparent position and appearance of a planet (equinox of date). */
@@ -124,6 +128,7 @@ export function planetPosition(id: PlanetId, date: Date): PlanetPosition {
     minorArcsec,
     magnitude: magnitude(id, i, r, delta, ringTiltDeg),
     ringTiltDeg,
+    j2000,
   };
 }
 

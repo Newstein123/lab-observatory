@@ -4,7 +4,7 @@
  * position angle, and lunation events. CALCULATED.
  */
 import { eclipticToEquatorial, hourAngle, positionAngle, type Equatorial, type Site } from "./coords";
-import { acos, asin, atan2, AU_KM, cos, norm180, norm360, sin } from "./math";
+import { acos, asin, atan2, AU_KM, cos, norm180, norm360, sin, tan } from "./math";
 import { sunPosition } from "./sun";
 import { julianCenturies, obliquity } from "./time";
 
@@ -81,13 +81,20 @@ export interface MoonPosition extends Equatorial {
 }
 
 /** Geocentric position of the Moon. */
+/** Fundamental arguments (Meeus 47.1–47.5), degrees, for Julian centuries t. */
+function moonArguments(t: number) {
+  return {
+    lp: norm360(218.3164477 + 481267.88123421 * t - 0.0015786 * t * t + t ** 3 / 538841 - t ** 4 / 65194000),
+    d: norm360(297.8501921 + 445267.1114034 * t - 0.0018819 * t * t + t ** 3 / 545868 - t ** 4 / 113065000),
+    m: norm360(357.5291092 + 35999.0502909 * t - 0.0001536 * t * t + t ** 3 / 24490000),
+    mp: norm360(134.9633964 + 477198.8675055 * t + 0.0087414 * t * t + t ** 3 / 69699 - t ** 4 / 14712000),
+    f: norm360(93.272095 + 483202.0175233 * t - 0.0036539 * t * t - t ** 3 / 3526000 + t ** 4 / 863310000),
+  };
+}
+
 export function moonPosition(date: Date): MoonPosition {
   const t = julianCenturies(date);
-  const lp = norm360(218.3164477 + 481267.88123421 * t - 0.0015786 * t * t + t ** 3 / 538841 - t ** 4 / 65194000);
-  const d = norm360(297.8501921 + 445267.1114034 * t - 0.0018819 * t * t + t ** 3 / 545868 - t ** 4 / 113065000);
-  const m = norm360(357.5291092 + 35999.0502909 * t - 0.0001536 * t * t + t ** 3 / 24490000);
-  const mp = norm360(134.9633964 + 477198.8675055 * t + 0.0087414 * t * t + t ** 3 / 69699 - t ** 4 / 14712000);
-  const f = norm360(93.272095 + 483202.0175233 * t - 0.0036539 * t * t - t ** 3 / 3526000 + t ** 4 / 863310000);
+  const { lp, d, m, mp, f } = moonArguments(t);
   const a1 = 119.75 + 131.849 * t;
   const a2 = 53.09 + 479264.29 * t;
   const a3 = 313.45 + 481266.484 * t;
@@ -215,4 +222,168 @@ export function nextLunarPhase(from: Date, targetDeg: 0 | 90 | 180 | 270): Date 
     fa = fb;
   }
   return new Date(from.getTime() + SYNODIC_MONTH_DAYS * 86_400_000);
+}
+
+/** Inclination of the mean lunar equator to the ecliptic (Meeus ch. 53), degrees. */
+const LUNAR_I = 1.54242;
+
+export interface MoonOrientation {
+  /** Selenographic longitude of the point facing the observer (libration in longitude), degrees, east-positive. */
+  librationLonDeg: number;
+  /** Selenographic latitude of the point facing the observer (libration in latitude), degrees. */
+  librationLatDeg: number;
+  /** Position angle of the Moon's north pole, from celestial north through east, degrees. */
+  axisPaDeg: number;
+  /** Selenographic latitude and longitude of the sub-solar point, degrees. */
+  subSolarLatDeg: number;
+  subSolarLonDeg: number;
+}
+
+/**
+ * Selenographic coordinates (Meeus 53.1 with the physical libration terms of
+ * ch. 53) of the point of the Moon on the line to a body at ecliptic
+ * longitude/latitude λ, β as seen from the Moon's centre.
+ */
+function librations(lambda: number, beta: number, a: ReturnType<typeof moonArguments>, t: number) {
+  const { d, m, mp, f } = a;
+  const om = norm360(125.0445479 - 1934.1362891 * t + 0.0020754 * t * t + t ** 3 / 467441 - t ** 4 / 60616000);
+  const e = 1 - 0.002516 * t - 0.0000074 * t * t;
+  const k1 = 119.75 + 131.849 * t;
+  const k2 = 72.56 + 20.186 * t;
+  const w = lambda - om;
+  const aa = atan2(sin(w) * cos(beta) * cos(LUNAR_I) - sin(beta) * sin(LUNAR_I), cos(w) * cos(beta));
+  const lOpt = norm180(aa - f);
+  const bOpt = asin(-sin(w) * cos(beta) * sin(LUNAR_I) - sin(beta) * cos(LUNAR_I));
+  const rho =
+    -0.02752 * cos(mp) - 0.02245 * sin(f) + 0.00684 * cos(mp - 2 * f) - 0.00293 * cos(2 * f) - 0.00085 * cos(2 * f - 2 * d) -
+    0.00054 * cos(mp - 2 * d) - 0.0002 * sin(mp + f) - 0.0002 * cos(mp + 2 * f) - 0.0002 * cos(mp - f) + 0.00014 * cos(mp + 2 * f - 2 * d);
+  const sigma =
+    -0.02816 * sin(mp) + 0.02244 * cos(f) - 0.00682 * sin(mp - 2 * f) - 0.00279 * sin(2 * f) - 0.00083 * sin(2 * f - 2 * d) +
+    0.00069 * sin(mp - 2 * d) + 0.0004 * cos(mp + f) - 0.00025 * sin(2 * mp) - 0.00023 * sin(mp + 2 * f) + 0.0002 * cos(mp - f) +
+    0.00019 * sin(mp - f) + 0.00013 * sin(mp + 2 * f - 2 * d) - 0.0001 * cos(mp - 3 * f);
+  const tau =
+    0.0252 * e * sin(m) + 0.00473 * sin(2 * mp - 2 * f) - 0.00467 * sin(mp) + 0.00396 * sin(k1) + 0.00276 * sin(2 * mp - 2 * d) +
+    0.00196 * sin(om) - 0.00183 * cos(mp - f) + 0.00115 * sin(mp - 2 * d) - 0.00096 * sin(mp - d) + 0.00046 * sin(2 * f - 2 * d) -
+    0.00039 * sin(mp - f) - 0.00032 * sin(mp - m - d) + 0.00027 * sin(2 * mp - m - 2 * d) + 0.00023 * sin(k2) - 0.00014 * sin(2 * d) +
+    0.00014 * cos(2 * mp - 2 * f) - 0.00012 * sin(mp - 2 * f) - 0.00012 * sin(2 * mp) + 0.00011 * sin(2 * mp - 2 * m - 2 * d);
+  const lPhys = -tau + (rho * cos(aa) + sigma * sin(aa)) * tan(bOpt);
+  const bPhys = sigma * sin(aa) - rho * cos(aa);
+  return { l: norm180(lOpt + lPhys), b: bOpt + bPhys, om, rho, sigma };
+}
+
+/**
+ * How the Moon is turned towards us: libration (which part of the surface
+ * faces the observer), the position angle of its axis, and where the Sun is
+ * overhead. Meeus ch. 53; with a site, the topocentric corrections (up to
+ * about 1°) are applied. Accuracy about 0.05°, limited by the low-precision
+ * lunar theory (nutation is ignored). CALCULATED.
+ */
+export function moonOrientation(date: Date, site?: Site): MoonOrientation {
+  const t = julianCenturies(date);
+  const args = moonArguments(t);
+  const moon = moonPosition(date);
+  const lib = librations(moon.lonDeg, moon.latDeg, args, t);
+
+  // Position angle of the axis (Meeus 53.3).
+  const eps = obliquity(t);
+  const v = lib.om + lib.sigma / sin(LUNAR_I);
+  const x = sin(LUNAR_I + lib.rho) * sin(v);
+  const y = sin(LUNAR_I + lib.rho) * cos(v) * cos(eps) - cos(LUNAR_I + lib.rho) * sin(eps);
+  const omega = atan2(x, y);
+  let p = asin((Math.hypot(x, y) * cos(moon.raDeg - omega)) / cos(lib.b));
+  let l = lib.l;
+  let b = lib.b;
+
+  if (site) {
+    // Topocentric corrections (Meeus ch. 53, "topocentric librations").
+    const h = hourAngle(moon, site, date);
+    const q = atan2(cos(site.latDeg) * sin(h), cos(moon.decDeg) * sin(site.latDeg) - sin(moon.decDeg) * cos(site.latDeg) * cos(h));
+    const z = acos(sin(moon.decDeg) * sin(site.latDeg) + cos(moon.decDeg) * cos(site.latDeg) * cos(h));
+    const parallax = asin(EARTH_RADIUS_KM / moon.distanceKm);
+    const pp = parallax * (sin(z) + 0.0084 * sin(2 * z));
+    const dl = (-pp * sin(q - p)) / cos(b);
+    const db = pp * cos(q - p);
+    const dp = dl * sin(b + db) - pp * sin(q) * Math.tan((moon.decDeg * Math.PI) / 180);
+    l = norm180(l + dl);
+    b += db;
+    p += dp;
+  }
+
+  // Sub-solar point: the same formulas for the Sun seen from the Moon (Meeus 53, "selenographic position of the Sun").
+  const sun = sunPosition(date);
+  const ratio = moon.distanceKm / (sun.distanceAu * AU_KM);
+  const lambdaH = sun.lonDeg + 180 + ratio * (180 / Math.PI) * cos(moon.latDeg) * sin(sun.lonDeg - moon.lonDeg);
+  const betaH = ratio * moon.latDeg;
+  const sub = librations(lambdaH, betaH, args, t);
+
+  return { librationLonDeg: l, librationLatDeg: b, axisPaDeg: norm360(p), subSolarLatDeg: sub.b, subSolarLonDeg: sub.l };
+}
+
+/** A selenographic point projected onto the Moon's disc. */
+export interface DiscPoint {
+  /**
+   * Position in Moon radii in the sky frame used by the renderers: celestial
+   * north up, east left, y growing downwards (canvas convention).
+   */
+  x: number;
+  y: number;
+  /** Towards the observer when > 0: the point is on the visible hemisphere. */
+  z: number;
+  /** Cosine of the Sun's zenith angle at the point: lit when > 0. */
+  sunDot: number;
+}
+
+/** Unit vector of a selenographic point, in a frame where (lat0, lon0) faces +z and lunar north is +y. */
+function facing(latDeg: number, lonDeg: number, lat0: number, lon0: number) {
+  const dl = lonDeg - lon0;
+  return {
+    x: cos(latDeg) * sin(dl),
+    y: cos(lat0) * sin(latDeg) - sin(lat0) * cos(latDeg) * cos(dl),
+    z: sin(lat0) * sin(latDeg) + cos(lat0) * cos(latDeg) * cos(dl),
+  };
+}
+
+/**
+ * Orthographic projection of a selenographic point (east-positive longitude)
+ * onto the disc as seen with this orientation. The single source of truth for
+ * both the drawn Moon image and the feature labels.
+ */
+export function projectSelenographic(latDeg: number, lonDeg: number, o: MoonOrientation): DiscPoint {
+  const v = facing(latDeg, lonDeg, o.librationLatDeg, o.librationLonDeg);
+  // Lunar east (towards Mare Crisium) is on the sky's west side: screen right.
+  const r = rotateAxis(v.x, -v.y, o.axisPaDeg);
+  const s = facing(latDeg, lonDeg, o.subSolarLatDeg, o.subSolarLonDeg);
+  return { x: r.x, y: r.y, z: v.z, sunDot: s.z };
+}
+
+/**
+ * Inverse of projectSelenographic for a point on the disc (Moon radii, sky
+ * frame); undefined off the disc.
+ */
+export function unprojectDisc(x: number, y: number, o: MoonOrientation): { latDeg: number; lonDeg: number } | undefined {
+  const u = rotateAxis(x, y, -o.axisPaDeg);
+  return unprojectLunarNorthUp(u.x, u.y, o);
+}
+
+/** Inverse projection for a disc drawn with lunar north up (before the axis turn). */
+export function unprojectLunarNorthUp(x: number, yDown: number, o: Pick<MoonOrientation, "librationLatDeg" | "librationLonDeg">) {
+  const yUp = -yDown;
+  const rr = x * x + yUp * yUp;
+  if (rr > 1) return undefined;
+  const z = Math.sqrt(1 - rr);
+  const b = o.librationLatDeg;
+  const latDeg = asin(yUp * cos(b) + z * sin(b));
+  const lonDeg = norm180(o.librationLonDeg + atan2(x, z * cos(b) - yUp * sin(b)));
+  return { latDeg, lonDeg };
+}
+
+/**
+ * Turn a point (canvas frame, y down) so that lunar north points paDeg
+ * counter-clockwise from screen-up: the same turn drawTarget applies for
+ * `rotationDeg`.
+ */
+function rotateAxis(x: number, y: number, paDeg: number) {
+  const c = cos(-paDeg);
+  const s = sin(-paDeg);
+  return { x: x * c - y * s, y: x * s + y * c };
 }

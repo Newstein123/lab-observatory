@@ -144,6 +144,7 @@ export function ViewTools({
         {layersPop.open && (
           <Popover title="Layers">
             <Check label="Labels" hint="Target and moon names" checked={layers.labels} onChange={(v) => setLayers({ labels: v })} />
+            <Check label="Feature labels" hint="Craters, maria and mountains, placed from their coordinates" checked={layers.features} onChange={(v) => setLayers({ features: v })} />
             <Check label="Scale bar" checked={layers.scale} onChange={(v) => setLayers({ scale: v })} />
             <Check label="Compass" hint="Where north and east are in this view" checked={layers.compass} onChange={(v) => setLayers({ compass: v })} />
             <Check
