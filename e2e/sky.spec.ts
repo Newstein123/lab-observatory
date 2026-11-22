@@ -88,6 +88,9 @@ test("a target below the horizon says when it rises, and jumps there", async ({ 
   await withSky(page, { fixedAt: "2026-11-16T06:00:00.000Z" });
   await page.goto("/lab/simulate?target=m42");
   await expect(page.getByText(/Orion Nebula is below the horizon from Bangkok/)).toBeVisible();
+  // The horizon is to blame, not the telescope.
+  await expect(page.getByText("Orion Nebula can't be seen right now")).toBeVisible();
+  await expect(page.getByText("Orion Nebula is out of reach for this setup")).toHaveCount(0);
   await page.getByRole("button", { name: /^Show it at/ }).click();
   await expect(page.getByText(/is below the horizon/)).toHaveCount(0);
 });

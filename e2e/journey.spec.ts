@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { signUpFreshUser } from "./helpers";
+import { pinSky, signUpFreshUser } from "./helpers";
 
 /**
  * The complete workflow from the UI brief: open the Lab, choose a telescope,
@@ -11,6 +11,7 @@ const metric = (page: Page, name: RegExp) => page.locator("summary").filter({ ha
 
 test("full journey: Lab → configure → simulate → compare → save → My Observatory", async ({ page }) => {
   page.on("dialog", (d) => d.accept());
+  await pinSky(page);
   await signUpFreshUser(page);
 
   // 1. Open Telescope Lab.

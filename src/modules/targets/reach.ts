@@ -49,9 +49,14 @@ const CORE_VISIBLE = 3.5;
 
 export type Reach = "good" | "challenging" | "out_of_reach";
 
+/** What the leading reason is about: tonight's sky (horizon, clouds, sky glow) or the equipment. */
+export type ReachCause = "sky" | "setup";
+
 export interface ReachAssessment {
   reach: Reach;
   reasons: string[];
+  /** Cause of the leading reason; undefined when the reach is good. */
+  cause?: ReachCause;
 }
 
 /** Surface brightness (mag/arcsec²) beyond which an extended object is hard / impractical by eye. */
@@ -68,8 +73,8 @@ const valid = (...xs: (number | undefined)[]) => xs.every((x) => typeof x === "n
 const fmt = (v: number, d = 1) => v.toFixed(d);
 
 export function assessReach(target: CuratedTarget, spec: ConfigurationSpec, mode: SimulationMode, sky?: ReachSky): ReachAssessment {
-  const found: { reach: Reach; reason: string }[] = [];
-  const add = (reach: Reach, reason: string) => found.push({ reach, reason });
+  const found: { reach: Reach; reason: string; cause: ReachCause }[] = [];
+  const add = (reach: Reach, reason: string, cause: ReachCause = "setup") => found.push({ reach, reason, cause });
   const D = spec.telescope.apertureMm;
   const efl = spec.telescope.focalLengthMm * (spec.barlow?.factor ?? 1);
   const major = target.angularSize.majorAxisArcsec;
@@ -79,17 +84,17 @@ export function assessReach(target: CuratedTarget, spec: ConfigurationSpec, mode
   const ext = sky?.extinctionMag ?? 0;
   const cloudLoss = sky?.cloudTransmission !== undefined ? -2.5 * Math.log10(Math.max(0.01, sky.cloudTransmission)) : 0;
   if (sky?.altitudeDeg !== undefined) {
-    if (sky.altitudeDeg < 0) add("out_of_reach", "Below the horizon at this time and place.");
-    else if (sky.altitudeDeg < 15) add("challenging", `Only ${fmt(sky.altitudeDeg, 0)}° up: thick, turbulent air near the horizon.`);
+    if (sky.altitudeDeg < 0) add("out_of_reach", "Below the horizon at this time and place.", "sky");
+    else if (sky.altitudeDeg < 15) add("challenging", `Only ${fmt(sky.altitudeDeg, 0)}° up: thick, turbulent air near the horizon.`, "sky");
   }
-  if (sky?.cloudTransmission !== undefined && sky.cloudTransmission < 0.2) add("out_of_reach", "Clouded out.");
+  if (sky?.cloudTransmission !== undefined && sky.cloudTransmission < 0.2) add("out_of_reach", "Clouded out.", "sky");
   const sbAll = surfaceBrightness(target);
   if (sky && sbAll !== undefined && (target.category === "galaxy" || target.category === "nebula")) {
     const core = sbAll - coreConcentration(target) + ext + cloudLoss;
     const where = `the sky here (${fmt(sky.skyMag)} mag/arcsec²)`;
-    if (core > sky.skyMag + CORE_VISIBLE) add("out_of_reach", `Its brightest part is lost in ${where}.`);
+    if (core > sky.skyMag + CORE_VISIBLE) add("out_of_reach", `Its brightest part is lost in ${where}.`, "sky");
     else if (core > sky.skyMag + CORE_GOOD)
-      add("challenging", mode === "eyepiece" ? `Only its core shows against ${where}.` : `Faint against ${where}: needs many stacked exposures or a filter.`);
+      add("challenging", mode === "eyepiece" ? `Only its core shows against ${where}.` : `Faint against ${where}: needs many stacked exposures or a filter.`, "sky");
   }
 
   if (mode === "eyepiece") {
@@ -127,7 +132,8 @@ export function assessReach(target: CuratedTarget, spec: ConfigurationSpec, mode
   }
 
   const reach = found.reduce<Reach>((worst, f) => (RANK[f.reach] > RANK[worst] ? f.reach : worst), "good");
-  return { reach, reasons: found.sort((a, b) => RANK[b.reach] - RANK[a.reach]).map((f) => f.reason) };
+  const sorted = found.sort((a, b) => RANK[b.reach] - RANK[a.reach]);
+  return { reach, reasons: sorted.map((f) => f.reason), cause: sorted[0]?.cause };
 }
 
 /** The more limiting of two assessments (e.g. when comparing two setups). */

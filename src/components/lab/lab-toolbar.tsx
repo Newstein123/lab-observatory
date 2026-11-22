@@ -6,13 +6,18 @@ import { Button, buttonStyles } from "@/components/ui/button";
 import { Icons } from "@/components/ui/icons";
 import { StatusChip } from "@/components/ui/status-chip";
 import { canPersist, signInHref, useAuth } from "@/modules/auth/use-auth";
+import { configurationSpecSchema } from "@/modules/configurations/models";
 import { isDraftDirty, markDraftSaved, type LabDraft } from "@/modules/lab/draft";
 import { getRepository } from "@/modules/persistence/client";
 import type { SimulationSession } from "@/modules/sessions/models";
 
 interface Props {
   draft: LabDraft;
-  /** Whether current inputs are valid (a simulation can run). */
+  /**
+   * Whether a simulation can run with the current inputs and mode. Gates
+   * saving a session only: the configuration itself is saveable whenever it
+   * is valid (a camera-only setup can be saved from the eyepiece view).
+   */
   valid: boolean;
   /** Provided on pages that can save a simulation session. */
   onSaveSession?: () => Promise<SimulationSession>;
@@ -34,6 +39,8 @@ export function LabToolbar({ draft, valid, onSaveSession, sessionWait, actions, 
   const config = draft.spec;
   const saved = draft.saved;
   const dirty = isDraftDirty(draft);
+  // The same rules the repository enforces on save.
+  const configValid = configurationSpecSchema.safeParse(config).success;
 
   async function run(action: () => Promise<Feedback>) {
     setBusy(true);
@@ -72,13 +79,13 @@ export function LabToolbar({ draft, valid, onSaveSession, sessionWait, actions, 
   const state = !saved ? "Not saved" : dirty ? "Unsaved changes" : `Saved · v${saved.version}`;
 
   return (
-    <div className="glass rounded-2xl px-4 py-3">
+    <div className="glass rounded-2xl px-3 py-2.5 sm:px-4 sm:py-3">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <div className="flex w-full min-w-0 items-center gap-3 sm:w-auto sm:flex-1">
           {leading}
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="truncate text-lg font-semibold tracking-tight">{config.name || "Untitled configuration"}</span>
+              <span className="truncate text-base font-semibold tracking-tight sm:text-lg">{config.name || "Untitled configuration"}</span>
               <StatusChip status={config.status} />
             </div>
             <p className={`text-xs ${dirty ? "text-warning" : "text-muted"}`}>
@@ -87,7 +94,8 @@ export function LabToolbar({ draft, valid, onSaveSession, sessionWait, actions, 
             </p>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        {/* Phones: one swipeable row of actions instead of two or three wrapped rows. */}
+        <div className="-mx-3 flex w-[calc(100%+1.5rem)] items-center gap-2 overflow-x-auto px-3 [scrollbar-width:none] sm:mx-0 sm:w-auto sm:flex-wrap sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden [&>*]:shrink-0">
           {!canPersist(auth) ? (
             auth.mode === "supabase" && auth.status === "signed-out" ? (
               <Link href={signInHref()} className={buttonStyles({ size: "sm" })}>
@@ -100,14 +108,14 @@ export function LabToolbar({ draft, valid, onSaveSession, sessionWait, actions, 
                 // On the simulate page the simulation is the main thing to save.
                 variant={saved && !dirty ? "secondary" : onSaveSession ? "secondary" : "primary"}
                 size="sm"
-                disabled={busy || !valid || (Boolean(saved) && !dirty)}
+                disabled={busy || !configValid || (Boolean(saved) && !dirty)}
                 onClick={save}
               >
                 {saved && !dirty ? <Icons.Check className="size-4" /> : <Icons.Bookmark className="size-4" />}
                 {!saved ? "Save configuration" : dirty ? "Save changes" : "Saved"}
               </Button>
               {saved && (
-                <Button size="sm" disabled={busy || !valid} onClick={saveAsNew}>
+                <Button size="sm" disabled={busy || !configValid} onClick={saveAsNew}>
                   Save as new
                 </Button>
               )}

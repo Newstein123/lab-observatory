@@ -52,7 +52,7 @@ export function DiscoveriesButton({
         {here.length > 0 && <span className="rounded-full bg-accent/30 px-1.5 text-[10px] font-semibold text-foreground">{here.length}</span>}
       </button>
       {open && (
-        <div role="dialog" aria-label="Your discoveries" className="absolute right-0 top-11 z-30 w-72 rounded-xl border border-border bg-surface-raised p-3 text-sm shadow-xl">
+        <div role="dialog" aria-label="Your discoveries" className="z-30 rounded-xl border border-border bg-surface-raised p-3 text-sm shadow-xl max-sm:fixed max-sm:inset-x-4 max-sm:top-24 sm:absolute sm:right-0 sm:top-11 sm:w-72">
           <p className="mb-1.5 text-[11px] uppercase tracking-wide text-muted">Saved on {targetName}</p>
           {here.length ? (
             <ul className="space-y-0.5">

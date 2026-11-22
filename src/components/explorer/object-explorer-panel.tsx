@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Icons } from "@/components/ui/icons";
 import { signInHref } from "@/modules/auth/use-auth";
 import { Tabs } from "@/components/ui/tabs";
-import { TAB_LABELS, tabsFor } from "@/modules/explorer/registry";
+import { TAB_LABELS, TAB_SHORT_LABELS, tabsFor } from "@/modules/explorer/registry";
 import type { ExplorerTab } from "@/modules/explorer/types";
 import { selectionKey, selectionName, type ExplorerContext } from "./explorer-context";
 import { LearnTab } from "./learn-tab";
@@ -25,6 +25,7 @@ const TAB_ICONS: Record<ExplorerTab, (p: { className?: string }) => React.ReactN
  * ObjectInformationPanel: the Astronomical Object Explorer beside the view.
  * Tabs adapt to what is selected (registry.ts).
  */
+/** On narrow screens the panel comes first in its column, right under the view (see lab-workspace). */
 export function ObjectExplorerPanel({ ctx, tabRequest }: { ctx: ExplorerContext; tabRequest?: { tab: ExplorerTab; n: number } }) {
   const tabs = tabsFor(ctx.object, ctx.selection);
   const [wanted, setWanted] = useState<ExplorerTab>(tabRequest?.tab ?? "info");
@@ -36,7 +37,7 @@ export function ObjectExplorerPanel({ ctx, tabRequest }: { ctx: ExplorerContext;
   const crumb = selectionName(ctx);
 
   return (
-    <section aria-label="Object Explorer" className="glass flex min-h-[420px] flex-col rounded-2xl p-2 xl:min-h-0 xl:flex-1" data-testid="object-explorer">
+    <section aria-label="Object Explorer" className="glass flex min-h-[420px] min-w-0 scroll-mt-20 flex-col rounded-2xl p-2 max-xl:order-first xl:min-h-0 xl:flex-1" data-testid="object-explorer">
       <div className="flex items-center gap-2 px-1 pb-2">
         <nav aria-label="Explorer location" className="flex min-w-0 flex-1 items-center gap-1 text-xs text-muted">
           <button type="button" onClick={() => ctx.onSelect({ kind: "object" })} className="truncate hover:text-foreground">
@@ -65,9 +66,14 @@ export function ObjectExplorerPanel({ ctx, tabRequest }: { ctx: ExplorerContext;
               {ctx.discovery.saved ? "Saved" : "Save"}
             </button>
           ) : (
-            <a href={signInHref()} className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border px-2.5 text-xs text-muted hover:text-foreground">
+            <a href={signInHref()} aria-label="Sign in to save" className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border px-2.5 text-xs text-muted hover:text-foreground">
               <Icons.Bookmark className="size-3.5" />
-              Sign in to save
+              <span aria-hidden className="max-sm:hidden">
+                Sign in to save
+              </span>
+              <span aria-hidden className="sm:hidden">
+                Save
+              </span>
             </a>
           ))}
         <button
@@ -86,7 +92,7 @@ export function ObjectExplorerPanel({ ctx, tabRequest }: { ctx: ExplorerContext;
       <Tabs<ExplorerTab>
         label="Explorer"
         variant="segmented"
-        className="flex w-full shrink-0 [&>button]:flex-1"
+        className="flex w-full min-w-0 shrink-0 [&>button]:min-w-0 [&>button]:flex-1 [&>button]:px-2 sm:[&>button]:px-3.5"
         value={tab}
         onChange={setWanted}
         items={tabs.map((t) => {
@@ -94,9 +100,12 @@ export function ObjectExplorerPanel({ ctx, tabRequest }: { ctx: ExplorerContext;
           return {
             id: t,
             label: (
-              <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-                <Icon className="size-4" />
-                {TAB_LABELS[t]}
+              <span className="inline-flex min-w-0 items-center justify-center gap-1.5 whitespace-nowrap">
+                <Icon className="size-4 shrink-0 max-sm:hidden" />
+                <span aria-hidden className="sm:hidden">
+                  {TAB_SHORT_LABELS[t]}
+                </span>
+                <span className="max-sm:sr-only">{TAB_LABELS[t]}</span>
               </span>
             ),
           };

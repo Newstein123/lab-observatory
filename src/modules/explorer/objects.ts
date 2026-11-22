@@ -67,15 +67,18 @@ const CURATED: Record<string, Omit<ExplorerObject, "id" | "targetId">> = { moon:
 export function explorerObjectFor(target: CuratedTarget): ExplorerObject {
   const curated = CURATED[target.id];
   if (curated) return { id: target.id, targetId: target.id, ...curated };
+  // Same rule as the Lab's target panel: catalogue values count as retrieved
+  // only once checked against SIMBAD / JPL Horizons; until then, estimated.
+  const kind = target.provenance.verification === "verified" ? "retrieved" : "estimated";
   const properties: Property[] = [
-    ...(target.designation ? [p("Designation", target.designation, "retrieved", ["catalogue"])] : []),
-    p("Magnitude", target.magnitude.toFixed(1), "retrieved", ["catalogue"]),
+    ...(target.designation ? [p("Designation", target.designation, kind, ["catalogue"])] : []),
+    p("Magnitude", target.magnitude.toFixed(1), kind, ["catalogue"]),
     p(
       "Apparent size",
       target.angularSize.majorAxisArcsec === target.angularSize.minorAxisArcsec
         ? formatAngleArcsec(target.angularSize.majorAxisArcsec)
         : `${formatAngleArcsec(target.angularSize.majorAxisArcsec)} × ${formatAngleArcsec(target.angularSize.minorAxisArcsec)}`,
-      "retrieved",
+      kind,
       ["catalogue"],
       target.angularSize.note,
     ),

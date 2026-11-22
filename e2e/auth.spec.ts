@@ -57,3 +57,64 @@ test("one user cannot open another user's saved session", async ({ browser }) =>
   await bob.goto(sessionUrl);
   await expect(bob.getByText("This simulation does not exist or was deleted.")).toBeVisible();
 });
+
+/** Local Supabase captures auth emails in Mailpit. */
+const MAILPIT = process.env.MAILPIT_URL ?? "http://127.0.0.1:54324";
+
+async function latestLinkTo(email: string): Promise<string> {
+  let link: string | undefined;
+  await expect
+    .poll(
+      async () => {
+        const list = await (await fetch(`${MAILPIT}/api/v1/search?query=${encodeURIComponent(`to:"${email}"`)}`)).json();
+        const id = list.messages?.[0]?.ID;
+        if (!id) return undefined;
+        const message = await (await fetch(`${MAILPIT}/api/v1/message/${id}`)).json();
+        link = String(message.Text ?? "").match(/https?:\/\/\S+\/auth\/v1\/verify\?[^\s)\]]+/)?.[0];
+        return link;
+      },
+      { timeout: 20_000 },
+    )
+    .toBeTruthy();
+  return link!.replace(/&amp;/g, "&");
+}
+
+test("forgotten password: email a reset link, set a new password, sign in with it", async ({ page, isMobile }) => {
+  // One project only: local Supabase allows very few auth emails per hour.
+  test.skip(isMobile, "Desktop only (email rate limit)");
+  test.skip(!(await fetch(`${MAILPIT}/api/v1/info`).then((r) => r.ok, () => false)), "Mailpit not reachable");
+
+  const email = (await signUpFreshUser(page))!;
+  await page.getByRole("button", { name: "Sign out" }).click();
+  await expect(page.getByRole("banner").getByRole("link", { name: "Sign in" })).toBeVisible();
+
+  await page.goto("/sign-in");
+  await page.getByRole("button", { name: "Forgot password?" }).click();
+  await expect(page.getByLabel("Password")).toHaveCount(0);
+  await page.getByLabel("Email").fill(email);
+  await page.getByRole("button", { name: "Email me a reset link" }).click();
+  await expect(page.locator("form").getByRole("status")).toContainText(/reset link is on its way/);
+
+  await page.goto(await latestLinkTo(email));
+  await expect(page.getByRole("heading", { name: "Choose a new password" })).toBeVisible();
+  const NEW_PASSWORD = "a-brand-new-password-42";
+  await page.getByLabel("New password").fill(NEW_PASSWORD);
+  await page.getByRole("button", { name: "Set new password" }).click();
+  await expect(page).toHaveURL(/\/observatory/);
+
+  await page.getByRole("button", { name: "Sign out" }).click();
+  await page.goto("/sign-in");
+  await page.getByLabel("Email").fill(email);
+  await page.getByLabel("Password").fill(PASSWORD);
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page.locator("form").getByRole("alert")).toContainText(/invalid/i);
+  await page.getByLabel("Password").fill(NEW_PASSWORD);
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page).toHaveURL(/\/observatory/);
+});
+
+test("an expired or broken reset link explains itself", async ({ page }) => {
+  await page.goto("/auth/reset?error=access_denied&error_description=Email+link+is+invalid+or+has+expired");
+  await expect(page.getByRole("alert").filter({ hasText: "Email link is invalid or has expired" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Request a new link" })).toBeVisible();
+});

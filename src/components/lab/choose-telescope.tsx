@@ -21,6 +21,7 @@ import { startDraft } from "@/modules/lab/draft";
 import { defaultMount, specFromCatalog, specFromCustom, specFromProfile } from "@/modules/lab/start";
 import { useOwnerQuery } from "@/modules/persistence/use-owner-query";
 import { telescopeOpticsSchema, type OpticalDesign, type TelescopeOptics } from "@/modules/simulations/engine";
+import { MobileStepBar } from "./mobile-step-bar";
 import { TubeSilhouette } from "./tube-silhouette";
 
 export type ChooseTab = "catalog" | "custom" | "mine";
@@ -95,6 +96,10 @@ function CatalogTab({ onChoose }: { onChoose: (t: TelescopeCatalogEntry) => void
   const [flMin, setFlMin] = useState<number | undefined>();
   const [flMax, setFlMax] = useState<number | undefined>();
   const [selectedId, setSelectedId] = useState<string>();
+  // Phones and tablets: the filters fold away behind one button so the telescopes come first.
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const activeFilters = [maker, design, mountType, apMin, apMax, flMin, flMax].filter((v) => v !== "" && v !== undefined).length;
+  const details = useRef<HTMLElement>(null);
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -139,9 +144,12 @@ function CatalogTab({ onChoose }: { onChoose: (t: TelescopeCatalogEntry) => void
   };
 
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[240px_minmax(0,1fr)] xl:grid-cols-[240px_minmax(0,1fr)_380px]">
-      <aside className="glass h-fit space-y-4 rounded-xl p-4" aria-label="Filters">
-        <div className="relative">
+    <div
+      className={`grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[240px_minmax(0,1fr)] xl:grid-cols-[240px_minmax(0,1fr)_380px] ${selected ? "max-xl:pb-24" : ""}`}
+    >
+      <aside className={`glass h-fit space-y-4 rounded-xl p-4 ${filtersOpen ? "" : "max-lg:space-y-0"}`} aria-label="Filters">
+        <div className="flex gap-2">
+        <div className="relative min-w-0 flex-1">
           <label htmlFor="catalog-search" className="sr-only">
             Search telescopes
           </label>
@@ -155,6 +163,19 @@ function CatalogTab({ onChoose }: { onChoose: (t: TelescopeCatalogEntry) => void
             className={`${inputClass} pl-8`}
           />
         </div>
+        <button
+          type="button"
+          aria-expanded={filtersOpen}
+          aria-controls="catalog-filters"
+          onClick={() => setFiltersOpen((o) => !o)}
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-surface-sunken/70 px-3 text-sm text-muted hover:text-foreground lg:hidden"
+        >
+          <Icons.Sliders className="size-4" />
+          Filters
+          {activeFilters > 0 && <span className="rounded-full bg-accent/30 px-1.5 text-[11px] font-semibold text-foreground">{activeFilters}</span>}
+        </button>
+        </div>
+        <div id="catalog-filters" className={`space-y-4 ${filtersOpen ? "" : "max-lg:hidden"}`}>
         <SelectField
           label="Manufacturer"
           value={maker}
@@ -190,6 +211,7 @@ function CatalogTab({ onChoose }: { onChoose: (t: TelescopeCatalogEntry) => void
         <Button variant="ghost" size="sm" onClick={reset} className="w-full">
           Clear filters
         </Button>
+        </div>
       </aside>
 
       <section aria-label="Telescopes" className="min-w-0">
@@ -251,7 +273,7 @@ function CatalogTab({ onChoose }: { onChoose: (t: TelescopeCatalogEntry) => void
       </section>
 
       {/* Details: side panel on wide screens, below the list otherwise */}
-      <aside className="lg:col-span-2 xl:col-span-1" aria-label="Selected telescope">
+      <aside ref={details} className="scroll-mt-20 lg:col-span-2 xl:col-span-1" aria-label="Selected telescope">
         {selected ? (
           <div className="glass sticky top-20 overflow-hidden rounded-xl">
             <EquipmentViewer
@@ -289,6 +311,18 @@ function CatalogTab({ onChoose }: { onChoose: (t: TelescopeCatalogEntry) => void
           </div>
         )}
       </aside>
+
+      {/* Phones and tablets: the next step stays in reach once a telescope is picked. */}
+      {selected && (
+        <MobileStepBar label="Selected telescope actions" subtitle={selected.manufacturer} title={selected.model}>
+          <Button variant="ghost" size="sm" onClick={() => details.current?.scrollIntoView({ behavior: "smooth", block: "start" })}>
+            Details
+          </Button>
+          <Button variant="primary" size="sm" onClick={() => onChoose(selected)}>
+            Configure →
+          </Button>
+        </MobileStepBar>
+      )}
     </div>
   );
 }

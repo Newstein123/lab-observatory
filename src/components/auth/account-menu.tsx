@@ -13,14 +13,14 @@ export function AccountMenu() {
 
   if (auth.status === "signed-out") {
     return (
-      <Link href={signInHref()} className="rounded-lg border border-border-strong px-3 py-1.5 text-sm hover:border-accent">
+      <Link href={signInHref()} className="whitespace-nowrap rounded-lg border border-border-strong px-3 py-1.5 text-sm hover:border-accent">
         Sign in
       </Link>
     );
   }
 
   return (
-    <div className="flex items-center gap-3 text-sm">
+    <div className="flex shrink-0 items-center gap-2 text-sm sm:gap-3">
       <span className="flex min-w-0 items-center gap-2" title={auth.email}>
         <span
           aria-hidden
@@ -37,9 +37,16 @@ export function AccountMenu() {
           router.push("/");
           router.refresh();
         }}
-        className="rounded-lg border border-border-strong px-3 py-1.5 hover:border-accent"
+        aria-label="Sign out"
+        title="Sign out"
+        className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border border-border-strong p-2 hover:border-accent sm:px-3 sm:py-1.5"
       >
-        Sign out
+        {/* Small screens: icon only (the name stays as the accessible label). */}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="size-4 sm:hidden" aria-hidden>
+          <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3" />
+          <path d="M10 16l-4-4 4-4M6 12h10" />
+        </svg>
+        <span className="max-sm:hidden">Sign out</span>
       </button>
     </div>
   );

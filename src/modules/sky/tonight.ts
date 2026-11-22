@@ -75,7 +75,7 @@ export function planTonight(
       for (let t = curveFrom.getTime() - 3_600_000; t <= curveTo.getTime() + 3_600_000; t += step) curve.push({ t, altDeg: alt(new Date(t)) });
     }
     const none = (note: string): TonightEntry => {
-      const r: ReachAssessment = { reach: "out_of_reach", reasons: [note] };
+      const r: ReachAssessment = { reach: "out_of_reach", reasons: [note], cause: "sky" };
       return { target, rise: ev.rise, set: ev.set, reach: r, idealReach: assessReach(target, spec, mode, idealConditions(setting, target).reach), group: "not-tonight", note, curve };
     };
     if (!from || !to) return none("The Sun doesn't set tonight here.");

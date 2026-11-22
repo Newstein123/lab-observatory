@@ -13,7 +13,7 @@ export function SignInForm({ next }: { next?: string }) {
   const router = useRouter();
   const emailId = useId();
   const passwordId = useId();
-  const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
+  const [mode, setMode] = useState<"sign-in" | "sign-up" | "reset">("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -32,10 +32,25 @@ export function SignInForm({ next }: { next?: string }) {
     setBusy(true);
     setMessage(undefined);
     const supabase = getSupabaseBrowserClient();
+    if (mode === "reset") {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/auth/reset` });
+      setBusy(false);
+      // Same answer whether or not the address has an account.
+      setMessage(
+        error
+          ? { tone: "error", text: error.message }
+          : { tone: "info", text: "If that address has an account, a reset link is on its way. Open it in this browser." },
+      );
+      return;
+    }
     const { data, error } =
       mode === "sign-in"
         ? await supabase.auth.signInWithPassword({ email, password })
-        : await supabase.auth.signUp({ email, password });
+        : await supabase.auth.signUp({
+            email,
+            password,
+            options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(safeNext(next))}` },
+          });
     setBusy(false);
     if (error) {
       setMessage({ tone: "error", text: error.message });
@@ -68,22 +83,38 @@ export function SignInForm({ next }: { next?: string }) {
           className={inputClass}
         />
       </div>
-      <div className="space-y-1">
-        <label htmlFor={passwordId} className="block text-sm text-muted">
-          Password
-        </label>
-        <input
-          id={passwordId}
-          type="password"
-          autoComplete={mode === "sign-in" ? "current-password" : "new-password"}
-          required
-          minLength={8}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className={inputClass}
-        />
-        {mode === "sign-up" && <p className="text-xs text-muted">At least 8 characters.</p>}
-      </div>
+      {mode !== "reset" && (
+        <div className="space-y-1">
+          <div className="flex items-baseline justify-between">
+            <label htmlFor={passwordId} className="block text-sm text-muted">
+              Password
+            </label>
+            {mode === "sign-in" && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("reset");
+                  setMessage(undefined);
+                }}
+                className="text-xs text-accent hover:underline"
+              >
+                Forgot password?
+              </button>
+            )}
+          </div>
+          <input
+            id={passwordId}
+            type="password"
+            autoComplete={mode === "sign-in" ? "current-password" : "new-password"}
+            required
+            minLength={8}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className={inputClass}
+          />
+          {mode === "sign-up" && <p className="text-xs text-muted">At least 8 characters.</p>}
+        </div>
+      )}
       {message && (
         <p role={message.tone === "error" ? "alert" : "status"} className={`text-sm ${message.tone === "error" ? "text-danger" : "text-prov-retrieved"}`}>
           {message.text}
@@ -94,10 +125,10 @@ export function SignInForm({ next }: { next?: string }) {
         disabled={busy}
         className="w-full rounded-md bg-accent-strong px-3 py-2 text-sm font-medium text-accent-foreground hover:opacity-90 disabled:opacity-40"
       >
-        {mode === "sign-in" ? "Sign in" : "Create account"}
+        {mode === "sign-in" ? "Sign in" : mode === "sign-up" ? "Create account" : "Email me a reset link"}
       </button>
       <p className="text-center text-sm text-muted">
-        {mode === "sign-in" ? "New here?" : "Already have an account?"}{" "}
+        {mode === "sign-in" ? "New here?" : mode === "sign-up" ? "Already have an account?" : "Remembered it?"}{" "}
         <button
           type="button"
           onClick={() => {

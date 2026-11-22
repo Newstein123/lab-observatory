@@ -195,3 +195,19 @@ test("signed out with accounts enabled, saving asks to sign in", async ({ page }
   await page.goto("/lab/simulate?target=moon&feature=tycho");
   await expect(explorer(page).getByRole("link", { name: "Sign in to save" })).toBeVisible({ timeout: 30_000 });
 });
+
+test("phones: the explorer fits the screen and opens where you can see it", async ({ page, isMobile }) => {
+  test.skip(!isMobile, "Phone layout");
+  await withSky(page);
+  await page.goto("/lab/simulate?target=moon");
+  const label = page.locator("[data-feature]").first();
+  await expect(label).toBeVisible({ timeout: 30_000 });
+  await label.click();
+  const panel = explorer(page);
+  await expect(panel).toBeInViewport();
+  for (const tab of ["Object Info", "3D Model", "Surface Map", "Learn"]) {
+    await panel.getByRole("tab", { name: tab }).click();
+    // Nothing pushes the page wider than the screen (which would make the phone zoom out).
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
+  }
+});

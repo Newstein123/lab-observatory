@@ -101,6 +101,14 @@ describe("data integrity", () => {
     }
     for (const f of LUNAR_FEATURES.filter((x) => x.terrain)) expect(terrainAssets(f.id), f.id).toBeDefined();
   });
+  it("catalogue values are labelled retrieved only once verified", () => {
+    const m42 = getTarget("m42")!;
+    const kinds = explorerObjectFor(m42).properties.filter((p) => p.sourceIds.includes("catalogue")).map((p) => p.kind);
+    expect(kinds.length).toBeGreaterThan(0);
+    const expected = m42.provenance.verification === "verified" ? "retrieved" : "estimated";
+    for (const k of kinds) expect(k).toBe(expected);
+    expect(getSource("catalogue")!.credit).not.toMatch(/\bverified\b/i);
+  });
 });
 
 describe("Saturn's rings in the view", () => {

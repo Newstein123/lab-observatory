@@ -29,3 +29,15 @@ export async function fieldGroup(page: Page, name: string) {
   if ((await toggle.getAttribute("aria-expanded")) === "false") await toggle.click();
   return page.getByRole("group", { name, exact: true });
 }
+
+/**
+ * Fix the observing time and place so what is "up" never depends on when the
+ * tests run. 01:30 in Bangkok on 22 Nov 2026: Jupiter, Saturn and the Moon are
+ * all at least 20° up.
+ */
+export async function pinSky(page: Page, fixedAt = "2026-11-21T18:30:00.000Z") {
+  await page.addInitScript(
+    (p) => window.localStorage.setItem("ue.sky.v1", JSON.stringify(p)),
+    { siteId: "bangkok", live: false, manual: { cloud: 0, haze: "light", seeingArcsec: 2 }, timeMode: "fixed", fixedAt },
+  );
+}

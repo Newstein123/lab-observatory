@@ -77,6 +77,7 @@ export function SkyControls({
   targetVisual,
   ideal,
   onIdealChange,
+  bare = false,
 }: {
   sky: SkyContext;
   evaluation: SkyEvaluation;
@@ -84,17 +85,21 @@ export function SkyControls({
   targetVisual?: React.ReactNode;
   ideal: boolean;
   onIdealChange: (on: boolean) => void;
+  /** Without its card and heading (e.g. inside a sheet that has its own). */
+  bare?: boolean;
 }) {
   const { prefs, site, at } = sky;
   const { moonPhase: phase, moon, target } = evaluation;
   const chip = "inline-flex min-w-0 items-center gap-1.5 rounded-lg border border-border bg-surface-sunken/50 py-1 pl-1.5 pr-2.5";
   return (
-    <section className="glass space-y-3 rounded-2xl p-4" aria-label="Sky and location">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="flex items-center gap-2 text-[15px] font-semibold tracking-tight">
-          <Icons.Nebula className="size-[18px] text-accent" />
-          Sky &amp; Time
-        </h2>
+    <section className={bare ? "space-y-3" : "glass space-y-3 rounded-2xl p-4"} aria-label="Sky and location">
+      <div className={`flex flex-wrap items-center gap-2 ${bare ? "justify-end" : "justify-between"}`}>
+        {!bare && (
+          <h2 className="flex items-center gap-2 text-[15px] font-semibold tracking-tight">
+            <Icons.Nebula className="size-[18px] text-accent" />
+            Sky &amp; Time
+          </h2>
+        )}
         <IdealSwitch on={ideal} onChange={onIdealChange} />
       </div>
       <SitePicker siteName={site.kind === "dark-site" ? `${site.name} (dark site)` : site.name} country={site.country} bare />

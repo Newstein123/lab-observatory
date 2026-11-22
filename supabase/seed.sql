@@ -1,0 +1,2 @@
+-- Loaded by `supabase db reset` after the migrations (see [db.seed] in config.toml).
+-- Intentionally empty: every table is owned per user, and tests create their own users.

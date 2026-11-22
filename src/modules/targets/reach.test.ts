@@ -67,4 +67,15 @@ describe("reach (estimated)", () => {
     expect(r.reach).toBe("challenging");
     expect(r.reasons.join(" ")).toMatch(/only part fits/);
   });
+
+  it("says whether the sky or the setup is to blame", () => {
+    // Below the horizon: the sky, not the telescope.
+    const down = assessReach(t("jupiter"), dob200, "eyepiece", { skyMag: 21, altitudeDeg: -10 });
+    expect(down).toMatchObject({ reach: "out_of_reach", cause: "sky" });
+    // Too faint for a tiny aperture, high in a dark sky: the setup.
+    const tiny = { ...dob200, telescope: { apertureMm: 30, focalLengthMm: 300, opticalDesign: "refractor" as const } };
+    expect(assessReach(t("m57"), tiny, "eyepiece", { skyMag: 21.5, altitudeDeg: 60 })).toMatchObject({ reach: "out_of_reach", cause: "setup" });
+    // Nothing wrong: no cause.
+    expect(assessReach(t("jupiter"), dob200, "eyepiece", { skyMag: 21, altitudeDeg: 50 }).cause).toBeUndefined();
+  });
 });

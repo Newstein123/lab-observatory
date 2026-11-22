@@ -174,7 +174,7 @@ export const SOURCES = {
     id: "catalogue",
     name: "Universal Observatory target catalogue",
     url: "/lab/simulate",
-    credit: "Values from the app's curated catalogue (SIMBAD / JPL Horizons verified)",
+    credit: "Commonly cited catalogue values, entered by hand; not yet checked against SIMBAD / JPL Horizons",
     license: "—",
   },
 } as const satisfies Record<string, Source>;

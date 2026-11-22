@@ -14,6 +14,9 @@ export const TAB_LABELS: Record<ExplorerTab, string> = {
   learn: "Learn",
 };
 
+/** Compact labels for narrow screens. */
+export const TAB_SHORT_LABELS: Record<ExplorerTab, string> = { info: "Info", model: "3D", map: "Map", image: "Image", learn: "Learn" };
+
 export function tabsFor(object: ExplorerObject, selection: ExplorerSelection): ExplorerTab[] {
   const tabs: ExplorerTab[] = ["info"];
   const v = new Set(object.visualizations);

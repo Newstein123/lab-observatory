@@ -4,8 +4,20 @@ import { ProvenanceBadge, ProvenanceLegend } from "@/components/ui/provenance-ba
 import { ASSUMPTIONS, type Metric, type SimulationResult } from "@/modules/simulations/engine";
 import { CAMERA_METRIC_ORDER, EYEPIECE_METRIC_ORDER, METRIC_PRESENTATION } from "@/modules/simulations/presentation";
 
-/** `bare`: no outer cards (inside another card, e.g. a tab). */
-export function MetricsPanel({ result, bare = false }: { result: SimulationResult; bare?: boolean }) {
+/** Shown over numbers from the last valid result while the current inputs can't produce one. */
+export function StaleNote() {
+  return (
+    <p role="status" className="mb-2 rounded-md border border-warning/30 bg-warning/5 px-2 py-1 text-xs text-warning">
+      Last valid result: these numbers don&apos;t match the current setup.
+    </p>
+  );
+}
+
+/**
+ * `bare`: no outer cards (inside another card, e.g. a tab).
+ * `stale`: `result` is the last valid one, not the current inputs' (dimmed and labelled).
+ */
+export function MetricsPanel({ result, bare = false, stale = false }: { result: SimulationResult; bare?: boolean; stale?: boolean }) {
   const rows: [string, Metric][] =
     result.mode === "eyepiece"
       ? EYEPIECE_METRIC_ORDER.flatMap((k) => (result.metrics[k] ? [[k, result.metrics[k]!] as [string, Metric]] : []))
@@ -14,7 +26,8 @@ export function MetricsPanel({ result, bare = false }: { result: SimulationResul
   return (
     <div className="space-y-4">
       <Panel title="Results" icon={<Icons.Search />} className={bare ? "!border-0 !bg-none !p-0 [&>div:first-child]:sr-only" : ""}>
-        <ul className="divide-y divide-border">
+        {stale && <StaleNote />}
+        <ul className={`divide-y divide-border ${stale ? "opacity-50" : ""}`}>
           {rows.map(([key, metric]) => {
             const p = METRIC_PRESENTATION[key as keyof typeof METRIC_PRESENTATION];
             return (

@@ -174,7 +174,7 @@ function TerrainExplorer({ feature }: { feature: SurfaceFeature }) {
       <Tabs<TerrainView>
         label="Terrain view"
         variant="segmented"
-        className="flex w-full [&>button]:flex-1"
+        className="flex w-full min-w-0 [&>button]:min-w-0 [&>button]:flex-1 [&>button]:truncate [&>button]:px-1.5 sm:[&>button]:px-3.5"
         value={view}
         onChange={setView}
         items={[

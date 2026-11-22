@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { fieldGroup, signUpFreshUser } from "./helpers";
+import { fieldGroup, pinSky, signUpFreshUser } from "./helpers";
 
 /**
  * End-to-end coverage for equipment, configurations and sessions
@@ -9,6 +9,7 @@ import { fieldGroup, signUpFreshUser } from "./helpers";
 
 test.beforeEach(async ({ page }) => {
   page.on("dialog", (d) => d.accept());
+  await pinSky(page);
   await signUpFreshUser(page);
 });
 
@@ -127,7 +128,7 @@ test("AC-07/AC-08: mode switch keeps target and setup; inputs update results", a
 
   await page.getByRole("tab", { name: "Camera view" }).click();
   await expect(metric(page, /^Image scale/)).toContainText("0.78″/px");
-  await expect(page.getByRole("button", { name: "Jupiter", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("group", { name: "Target" }).getByRole("button", { name: "Jupiter", exact: true })).toHaveAttribute("aria-pressed", "true");
 
   await page.getByRole("tab", { name: "Eyepiece view" }).click();
   await expect(metric(page, /^Magnification/)).toContainText("100×");

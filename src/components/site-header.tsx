@@ -22,10 +22,10 @@ export function SiteHeader() {
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-border/80 bg-background/75 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-[1680px] items-center gap-8 px-4">
-          <Link href="/" className="flex items-center gap-2.5 font-semibold tracking-tight">
-            <Icons.Logo className="size-7" />
-            <span className="text-[17px]">Universal Observatory</span>
+        <div className="mx-auto flex h-16 max-w-[1680px] items-center gap-4 px-4 md:gap-8">
+          <Link href="/" className="flex min-w-0 items-center gap-2.5 font-semibold tracking-tight">
+            <Icons.Logo className="size-7 shrink-0" />
+            <span className="truncate whitespace-nowrap text-[15px] sm:text-[17px]">Universal Observatory</span>
           </Link>
           <nav aria-label="Main" className="hidden items-center gap-1 text-sm md:flex">
             {NAV.map((item) => {

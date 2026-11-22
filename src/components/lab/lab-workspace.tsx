@@ -28,10 +28,11 @@ import { EYEPIECE_CATALOG } from "@/modules/equipment/catalog";
 import { assessReach } from "@/modules/targets/reach";
 import { ConfigurationPanel, type FieldErrors } from "./configuration-panel";
 import { LabToolbar } from "./lab-toolbar";
-import { MetricsPanel } from "./metrics-panel";
+import { MetricsPanel, StaleNote } from "./metrics-panel";
 import { SimulationViewport, type ViewSettings } from "./simulation-viewport";
 import { TargetInfo } from "./target-info";
 import { TargetPicker } from "./target-picker";
+import { AccessorySheetPicker, BarlowChooser, EyepieceChooser, MobileControlDock, type DockItem } from "./mobile-controls";
 import { TargetGlyph } from "./target-glyph";
 import { useViewOptions } from "./view-options";
 import { SnapshotDialog, ViewTools } from "./view-tools";
@@ -276,6 +277,8 @@ function Workspace({
   const [lastValid, setLastValid] = useState<SimulationResult | undefined>(outcome.result);
   if (outcome.result && outcome.result !== lastValid) setLastValid(outcome.result);
   const shown = outcome.result ?? lastValid;
+  // `shown` is a fallback from other inputs (another mode, target or a now-invalid value).
+  const resultStale = Boolean(shown) && (!outcome.result || shown!.mode !== mode || shown!.targetId !== target.id);
   const errors = outcome.errors ?? {};
 
   const siteLatLon = useMemo(() => ({ latDeg: sky.site.latDeg, lonDeg: sky.site.lonDeg }), [sky.site.latDeg, sky.site.lonDeg]);
@@ -313,9 +316,22 @@ function Workspace({
     return { inField: inF as ReadonlySet<string>, lit: litS as ReadonlySet<string> };
   }, [geometry, explorerObject, bodyRadiusArcsec, fieldRadiusArcsec, pan.x, pan.y]);
 
+  // Below the three-column layout the panel sits under the view: bring it into sight when something is picked.
+  const [revealPanel, setRevealPanel] = useState(0);
+  const narrow = () => typeof window !== "undefined" && window.matchMedia("(max-width: 1279px)").matches;
+  useEffect(() => {
+    if (!revealPanel || !narrow()) return;
+    const el = document.querySelector<HTMLElement>("[data-testid=object-explorer]");
+    if (el && el.getBoundingClientRect().top > window.innerHeight * 0.6) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [revealPanel]);
   const select = (s: ExplorerSelection) => {
     setSelected(s);
     setExplorerOpen(true);
+    setRevealPanel((n) => n + 1);
+  };
+  const closeExplorer = () => {
+    setExplorerOpen(false);
+    if (narrow()) document.querySelector("[data-view-canvas]")?.scrollIntoView({ behavior: "smooth", block: "center" });
   };
   const togglePin = (s: ExplorerSelection | undefined) => {
     if (!s) return;
@@ -382,7 +398,7 @@ function Workspace({
         onSelect: select,
         onPin: togglePin,
         onCentre: centreOn,
-        onClose: () => setExplorerOpen(false),
+        onClose: closeExplorer,
       }
     : undefined;
 
@@ -439,8 +455,154 @@ function Workspace({
   const missingComponent = errors.eyepiece ?? errors.camera;
   const compareHref = `/lab/compare?target=${target.id}&mode=${mode}${savedId ? `&a=${savedId}` : ""}`;
 
+  const focusControls = (focusId: string) => (
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5 text-sm font-medium">
+          <label htmlFor={focusId}>Focus</label>
+          <span title="Focus blur is illustrative. Seeing blur is estimated from the sky conditions." className="text-subtle">
+            <Icons.Info className="size-3.5" />
+          </span>
+        </div>
+        <div className="mt-1.5 flex items-center gap-3">
+          <input
+            id={focusId}
+            type="range"
+            min={0}
+            max={1}
+            step={0.05}
+            value={focusOffset}
+            onChange={(e) => setFocusOffset(Number(e.target.value))}
+            className="min-w-0 flex-1 accent-accent"
+          />
+          <span
+            className={`inline-flex shrink-0 items-center gap-1 rounded-md border px-2 py-1 text-xs ${
+              focusOffset === 0 ? "border-success/40 bg-success/10 text-success" : "border-warning/40 bg-warning/10 text-warning"
+            }`}
+          >
+            {focusOffset === 0 ? <Icons.Check className="size-3.5" /> : <Icons.Warning className="size-3.5" />}
+            {focusOffset === 0 ? "In focus" : `${Math.round(focusOffset * 100)}% off`}
+          </span>
+        </div>
+      </div>
+      {deepSky && (
+        <div className="sm:border-l sm:border-border sm:pl-4">
+          <p className="mb-1.5 text-xs text-muted">View options</p>
+          <button
+            type="button"
+            aria-pressed={longExposureColor}
+            onClick={() => setLongExposureColor((v) => !v)}
+            title="Off: stars from star catalogues down to your telescope's limit, over the object in grey, as the eye sees it. On: the full survey photograph, with far more stars and colour than the eye sees."
+            className={`inline-flex h-9 items-center gap-2 rounded-lg border px-3 text-sm transition-colors ${
+              longExposureColor ? "border-accent bg-accent/20 text-foreground" : "border-border bg-surface-sunken/50 text-muted hover:text-foreground"
+            }`}
+          >
+            <Icons.Image className="size-4" />
+            Long-exposure photo
+          </button>
+        </div>
+      )}
+    </div>
+  );
+  const cameraControls = () => (
+    <div className="grid grid-cols-2 gap-x-4 gap-y-3 md:grid-cols-4">
+      <NumberField
+        label="Exposure"
+        unit="s"
+        step={0.001}
+        value={exposureS}
+        error={errors["exposure.exposureS"]}
+        onChange={setExposureS}
+        hint={`Suggested: ${target.suggestedExposureS} s`}
+      />
+      <RangeField label="Gain" min={1} max={64} step={1} value={gain} onChange={setGain} display={`${gain}×`} />
+      <SelectField<TrackingMode>
+        label="Tracking"
+        value={tracking}
+        onChange={setTracking}
+        options={[
+          { value: "sidereal", label: "Sidereal (motorised)" },
+          { value: "none", label: "None (sky drifts)" },
+        ]}
+      />
+      <RangeField label="Zoom (crop)" min={0} max={6} step={1} value={zoomStep} onChange={setZoomStep} display={`${zoom}×`} />
+    </div>
+  );
+
+  const mag = shown?.mode === "eyepiece" ? shown.metrics.magnification?.value : undefined;
+  const warningCount = shown?.warnings.length ?? 0;
+  const resultsSheet = () =>
+    shown ? (
+      <div className="space-y-4">
+        <QuickResults result={shown} stale={resultStale} />
+        {ideal && realResult && <IdealDelta ideal={shown} real={realResult} />}
+        <MetricsPanel result={shown} bare stale={resultStale} />
+      </div>
+    ) : (
+      <p className="text-sm text-muted">{missingComponent ?? "Check the configuration inputs."}</p>
+    );
+  const skyItem: DockItem = {
+    id: "sky",
+    label: "Sky",
+    value: ideal ? "Ideal" : sky.site.name,
+    icon: Icons.Moon,
+    title: "Sky, place and time",
+    content: () => <SkyControls sky={sky} evaluation={evaluation} targetName={target.name} targetVisual={<TargetGlyph target={target} size={18} />} ideal={ideal} onIdealChange={setIdeal} bare />,
+  };
+  const resultsItem: DockItem = { id: "results", label: "Results", value: warningCount ? `${warningCount} note${warningCount === 1 ? "" : "s"}` : "Details", icon: Icons.Chart, alert: warningCount > 0, content: resultsSheet };
+  const barlowItem: DockItem = {
+    id: "barlow",
+    label: "Barlow",
+    value: config.barlow ? `${config.barlow.factor}×` : "None",
+    icon: Icons.Barlow,
+    content: () => <BarlowChooser config={config} onChange={(barlow) => updateDraftSpec({ ...config, barlow })} />,
+  };
+  const dockItems: DockItem[] =
+    mode === "eyepiece"
+      ? [
+          {
+            id: "eyepiece",
+            label: "Eyepiece",
+            value: mag ? `${Math.round(mag)}×` : config.eyepiece ? `${config.eyepiece.focalLengthMm} mm` : "Choose",
+            icon: Icons.Eyepiece,
+            title: "Eyepiece: magnification",
+            content: () => <EyepieceChooser config={config} onChange={(eyepiece) => updateDraftSpec({ ...config, eyepiece })} />,
+          },
+          barlowItem,
+          {
+            id: "focus",
+            label: "Focus",
+            value: focusOffset === 0 ? "Sharp" : `${Math.round(focusOffset * 100)}% off`,
+            icon: Icons.Crosshair,
+            title: deepSky ? "Focus and view" : "Focus",
+            content: () => focusControls("focus-range-sheet"),
+          },
+          skyItem,
+          resultsItem,
+        ]
+      : [
+          {
+            id: "camera",
+            label: "Camera",
+            value: config.camera?.label?.replace(/^ZWO /, "") ?? "Choose",
+            icon: Icons.Camera,
+            content: () => <AccessorySheetPicker kind="camera" config={config} set={(patch) => updateDraftSpec({ ...config, ...patch })} />,
+          },
+          {
+            id: "exposure",
+            label: "Exposure",
+            value: exposureS !== undefined ? `${exposureS} s · ${gain}×` : undefined,
+            icon: Icons.Sliders,
+            title: "Exposure, gain, tracking and zoom",
+            content: cameraControls,
+          },
+          barlowItem,
+          skyItem,
+          resultsItem,
+        ];
+
   return (
-    <div className="mx-auto flex max-w-[1680px] flex-col gap-4 px-4 py-4 fill:h-[calc(100dvh-110px)]">
+    <div className="mx-auto flex max-w-[1680px] flex-col gap-4 px-4 py-4 max-lg:pb-28 fill:h-[calc(100dvh-110px)]">
       {(missingConfig || loadError) && (
         <p role="alert" className="rounded-lg border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-warning">
           {missingConfig
@@ -472,7 +634,8 @@ function Workspace({
           explorerOpen ? "xl:grid-cols-[280px_minmax(0,1fr)_minmax(400px,38%)]" : "xl:grid-cols-[300px_minmax(0,1fr)_380px]"
         } fill:min-h-0 fill:flex-1 fill:grid-rows-[minmax(0,1fr)]`}
       >
-        <aside className="order-2 flex flex-col lg:order-1 fill:min-h-0 fill:overflow-y-auto fill:[scrollbar-width:thin] [&>section]:flex-1">
+        {/* Phones: with the explorer open, its panel (in the right column) comes straight after the view. */}
+        <aside className={`${explorerOpen ? "order-3" : "order-2"} flex min-w-0 flex-col lg:order-1 fill:min-h-0 fill:overflow-y-auto fill:[scrollbar-width:thin] [&>section]:flex-1`}>
           <ConfigurationPanel
             config={config}
             onChange={(c) => updateDraftSpec(c)}
@@ -506,81 +669,8 @@ function Workspace({
                 discoveries={(cls) => <DiscoveriesButton targetId={target.id} targetName={target.name} saved={savedList} onOpen={select} className={cls} />}
               />
             }
-            readout={mode === "eyepiece" ? <MagnificationPicker config={config} result={shown} /> : undefined}
-            footer={
-              mode === "eyepiece" ? (
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5 text-sm font-medium">
-                      <label htmlFor="focus-range">Focus</label>
-                      <span title="Focus blur is illustrative. Seeing blur is estimated from the sky conditions." className="text-subtle">
-                        <Icons.Info className="size-3.5" />
-                      </span>
-                    </div>
-                    <div className="mt-1.5 flex items-center gap-3">
-                      <input
-                        id="focus-range"
-                        type="range"
-                        min={0}
-                        max={1}
-                        step={0.05}
-                        value={focusOffset}
-                        onChange={(e) => setFocusOffset(Number(e.target.value))}
-                        className="min-w-0 flex-1 accent-accent"
-                      />
-                      <span
-                        className={`inline-flex shrink-0 items-center gap-1 rounded-md border px-2 py-1 text-xs ${
-                          focusOffset === 0 ? "border-success/40 bg-success/10 text-success" : "border-warning/40 bg-warning/10 text-warning"
-                        }`}
-                      >
-                        {focusOffset === 0 ? <Icons.Check className="size-3.5" /> : <Icons.Warning className="size-3.5" />}
-                        {focusOffset === 0 ? "In focus" : `${Math.round(focusOffset * 100)}% off`}
-                      </span>
-                    </div>
-                  </div>
-                  {deepSky && (
-                    <div className="sm:border-l sm:border-border sm:pl-4">
-                      <p className="mb-1.5 text-xs text-muted">View options</p>
-                      <button
-                        type="button"
-                        aria-pressed={longExposureColor}
-                        onClick={() => setLongExposureColor((v) => !v)}
-                        title="Off: stars from star catalogues down to your telescope's limit, over the object in grey, as the eye sees it. On: the full survey photograph, with far more stars and colour than the eye sees."
-                        className={`inline-flex h-9 items-center gap-2 rounded-lg border px-3 text-sm transition-colors ${
-                          longExposureColor ? "border-accent bg-accent/20 text-foreground" : "border-border bg-surface-sunken/50 text-muted hover:text-foreground"
-                        }`}
-                      >
-                        <Icons.Image className="size-4" />
-                        Long-exposure photo
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-x-4 gap-y-3 md:grid-cols-4">
-                  <NumberField
-                    label="Exposure"
-                    unit="s"
-                    step={0.001}
-                    value={exposureS}
-                    error={errors["exposure.exposureS"]}
-                    onChange={setExposureS}
-                    hint={`Suggested: ${target.suggestedExposureS} s`}
-                  />
-                  <RangeField label="Gain" min={1} max={64} step={1} value={gain} onChange={setGain} display={`${gain}×`} />
-                  <SelectField<TrackingMode>
-                    label="Tracking"
-                    value={tracking}
-                    onChange={setTracking}
-                    options={[
-                      { value: "sidereal", label: "Sidereal (motorised)" },
-                      { value: "none", label: "None (sky drifts)" },
-                    ]}
-                  />
-                  <RangeField label="Zoom (crop)" min={0} max={6} step={1} value={zoomStep} onChange={setZoomStep} display={`${zoom}×`} />
-                </div>
-              )
-            }
+            readout={mode === "eyepiece" ? <div className="max-lg:hidden"><MagnificationPicker config={config} result={shown} /></div> : undefined}
+            footer={mode === "eyepiece" ? focusControls("focus-range") : cameraControls()}
           >
             {(maxSizePx) => shown ? (
               <SimulationViewport
@@ -616,7 +706,7 @@ function Workspace({
                 result={shown}
                 target={shownTarget}
                 settings={settings}
-                stale={!outcome.result || shown.mode !== mode || shown.targetId !== target.id}
+                stale={resultStale}
                 badge={
                   ideal ? (
                     <span className="inline-flex items-center gap-1 rounded bg-accent-strong px-1.5 py-0.5 text-[11px] font-medium text-accent-foreground">
@@ -701,7 +791,7 @@ function Workspace({
           (h-0 + min-h-full: it fills the row without making it taller), and
           the tab content scrolls inside it, so all three end level.
         */}
-        <aside className="order-3 flex flex-col gap-4 lg:col-span-2 xl:col-span-1 xl:h-0 xl:min-h-full xl:overflow-y-auto xl:[scrollbar-width:thin]">
+        <aside className={`${explorerOpen ? "order-2" : "order-3"} flex min-w-0 flex-col gap-4 lg:order-3 lg:col-span-2 xl:col-span-1 xl:h-0 xl:min-h-full xl:overflow-y-auto xl:[scrollbar-width:thin]`}>
           <SkyControls
             sky={sky}
             evaluation={evaluation}
@@ -714,13 +804,13 @@ function Workspace({
             <ObjectExplorerPanel ctx={explorerCtx} tabRequest={tabRequest} />
           ) : (
             <>
-          {shown && <QuickResults result={shown} />}
+          {shown && <QuickResults result={shown} stale={resultStale} />}
           <SideTabs
             results={
               shown && (
                 <div className="space-y-4">
                   {ideal && realResult && <IdealDelta ideal={shown} real={realResult} />}
-                  <MetricsPanel result={shown} bare />
+                  <MetricsPanel result={shown} bare stale={resultStale} />
                 </div>
               )
             }
@@ -732,6 +822,7 @@ function Workspace({
           )}
         </aside>
       </div>
+      <MobileControlDock items={dockItems} />
     </div>
   );
 }
@@ -822,7 +913,7 @@ const QUICK_ICON: Record<string, (p: { className?: string }) => React.ReactNode>
 };
 
 /** The three headline numbers for the current mode, as large tiles. */
-function QuickResults({ result }: { result: SimulationResult }) {
+function QuickResults({ result, stale = false }: { result: SimulationResult; stale?: boolean }) {
   const tiles: [string, Metric | undefined][] =
     result.mode === "eyepiece"
       ? [
@@ -837,7 +928,8 @@ function QuickResults({ result }: { result: SimulationResult }) {
         ];
   return (
     <Panel title="Quick results" icon={<Icons.Chart />} actions={<span className="font-mono text-[11px] text-muted">engine v{result.engineVersion}</span>}>
-      <dl className="grid grid-cols-3 gap-2">
+      {stale && <StaleNote />}
+      <dl className={`grid grid-cols-3 gap-2 ${stale ? "opacity-50" : ""}`}>
         {tiles.map(([key, m]) => {
           if (!m) return null;
           const p = METRIC_PRESENTATION[key as keyof typeof METRIC_PRESENTATION];
@@ -882,10 +974,12 @@ function ViewCard({
   const ref = useRef<HTMLDivElement>(null);
   const [full, setFull] = useState(false);
   const [screen, setScreen] = useState(0);
-  // Narrow screens: size the view so its controls stay on screen (320–560 px).
+  // Narrow screens: size the view to leave room for its controls (280–560 px).
   const [fit, setFit] = useState(520);
   useEffect(() => {
-    const onResize = () => setFit(Math.max(320, Math.min(560, window.innerHeight - 570)));
+    const onResize = () =>
+      // Below lg the controls live in the dock, so the view can take most of the screen.
+      setFit(window.innerWidth < 1024 ? Math.max(280, Math.min(560, window.innerHeight - 300)) : Math.max(320, Math.min(560, window.innerHeight - 570)));
     onResize();
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
@@ -983,7 +1077,7 @@ function ViewCard({
       </div>
     </div>
     {footer && (
-      <section aria-label="View controls" className="glass rounded-2xl px-4 py-3">
+      <section aria-label="View controls" className="glass rounded-2xl px-4 py-3 max-lg:hidden">
         {footer}
       </section>
     )}

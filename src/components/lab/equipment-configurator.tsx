@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { MobileStepBar } from "./mobile-step-bar";
 import { useState } from "react";
 import { EquipmentViewer, rigItem, type StageItem } from "@/components/equipment-3d";
 import { Button, buttonStyles } from "@/components/ui/button";
@@ -104,7 +105,7 @@ export function EquipmentConfigurator({ configId, initialCategory = "eyepiece" }
   }
 
   return (
-    <main className="mx-auto max-w-[1500px] space-y-4 px-4 py-6">
+    <main className="mx-auto max-w-[1500px] space-y-4 px-4 py-6 max-xl:pb-24">
       {status === "missing-config" && (
         <p role="alert" className="rounded-lg border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-warning">
           That configuration no longer exists. You are editing your current working setup.
@@ -114,12 +115,18 @@ export function EquipmentConfigurator({ configId, initialCategory = "eyepiece" }
         draft={draft}
         valid={telescopeOpticsSchema.safeParse(draft.spec.telescope).success}
         actions={
-          <Link href="/lab/simulate" className={buttonStyles({ variant: "primary", size: "sm" })}>
+          // Below xl the pinned step bar carries this action; one link, not two.
+          <Link href="/lab/simulate" className={`${buttonStyles({ variant: "primary", size: "sm" })} max-xl:hidden`}>
             Simulate →
           </Link>
         }
       />
       <Workbench draft={draft} category={category} onCategory={setCategory} />
+      <MobileStepBar label="Next step" subtitle="Step 2 · Equipment" title={draft.spec.name}>
+        <Link href="/lab/simulate" className={buttonStyles({ variant: "primary", size: "sm" })}>
+          Simulate →
+        </Link>
+      </MobileStepBar>
     </main>
   );
 }
